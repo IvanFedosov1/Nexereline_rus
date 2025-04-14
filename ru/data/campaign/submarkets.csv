@@ -1,26 +1,26 @@
 id,name,faction,desc,script,icon,order
-exerelin_prismMarket,High-End Seller,independent,"Pulls rare, advanced warships and weapons from across the Sector for those who are willing to pay a premium and don't ask too many questions. Preferred clients get better prices.",exerelin.campaign.submarkets.PrismMarket,graphics/SCY/factions/SCY_prismStorage.png,200
+exerelin_prismMarket,Продавец высококлассного оборудования,independent,"Собирает редкие, продвинутые военные корабли и оружие со всего Сектора для тех, кто готов платить премию и не задает слишком много вопросов. Привилегированные клиенты получают лучшие цены.",exerelin.campaign.submarkets.PrismMarket,graphics/SCY/factions/SCY_prismStorage.png,200
 ,,,,,,
 # vanilla override,,,,,,
-open_market,"Open
-Market",,"The open market. Only legal goods may be traded here, and transactions are subject to tariffs. More goods are available when stability is high.
+open_market,"Открытый
+рынок",,"Открытый рынок. Здесь можно торговать только законными товарами, и транзакции облагаются тарифами. Больше товаров доступно при высокой стабильности.
 
-Selling enough of a commodity will temporarily resolve a shortage.",exerelin.campaign.submarkets.Nex_OpenMarketPlugin,,0
-black_market,"Black
-Market",pirates,"The black market. Anything and everything can be bought or sold, and there are no tariffs. More goods are available when stability is low.
+Продажа достаточного количества товара временно устранит дефицит.",exerelin.campaign.submarkets.Nex_OpenMarketPlugin,,0
+black_market,"Чёрный
+рынок",pirates,"Чёрный рынок. Здесь можно купить или продать что угодно и всё, и нет никаких тарифов. Больше товаров доступно при низкой стабильности.
 
-Selling a commodity will not resolve a shortage.
+Продажа товара не устранит дефицит.
 
-Black market transactions may catch the eye of authorities, resulting in cargo scans and reduced faction standing, unless the trades are carried out with the transponder turned off.
+Транзакции на чёрном рынке могут привлечь внимание властей, что приведёт к сканированию груза и снижению репутации фракции, если только сделки не совершаются с выключенным транспондером.
 
-Engaging in legitimate trade as a ""cover"" also reduces the probability of attracting the attention of authorities.",exerelin.campaign.submarkets.Nex_BlackMarketPlugin,graphics/factions/black_market.png,999
-storage,Storage,player,Storage space for ships and cargo.,exerelin.campaign.submarkets.Nex_StoragePlugin,graphics/factions/storage.png,1000
-generic_military,,,"Trade with $theFaction military base.
+Участие в легальной торговле в качестве «прикрытия» также снижает вероятность привлечения внимания властей.",exerelin.campaign.submarkets.Nex_BlackMarketPlugin,graphics/factions/black_market.png,999
+storage,Хранилище,player,Место для хранения кораблей и грузов.,exerelin.campaign.submarkets.Nex_StoragePlugin,graphics/factions/storage.png,1000
+generic_military,,,"Торговля с военной базой $theFaction.
 
-Weapons and other military hardware can be bought and sold here even if they're illegal on the open market. A commission and better standing with $theFaction results in higher-grade hardware being available.
+Оружие и другое военное оборудование можно покупать и продавать здесь, даже если они нелегальны на открытом рынке. Комиссия и более высокий статус у $theFaction приводят к тому, что становится доступно оборудование более высокого класса.
 
-Will buy locally illegal goods as part of a no-questions-asked buyback program.
+Купит товары, нелегальные на местном уровне, в рамках программы выкупа без вопросов.
 
-Selling enough of a commodity will temporarily resolve a shortage.",exerelin.campaign.submarkets.Nex_MilitarySubmarketPlugin,,100
-local_resources,"Resource
-Stockpiles",,,exerelin.campaign.submarkets.Nex_LocalResourcesSubmarketPlugin,,200
+Продажа достаточного количества товара временно устранит дефицит.",exerelin.campaign.submarkets.Nex_MilitarySubmarketPlugin,,100
+local_resources,"Запасы
+ресурсов",,,exerelin.campaign.submarkets.Nex_LocalResourcesSubmarketPlugin,,200

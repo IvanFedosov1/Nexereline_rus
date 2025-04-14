@@ -1,13 +1,13 @@
 {
-	"exerelinInvasionFleet":"Invasion Fleet",
-	"exerelinInvasionSupportFleet":"Strike Fleet",
-	"exerelinResponseFleet":"Response Fleet",
-	"exerelinDefenceFleet":"Defence Fleet",
-	"exerelinMiningFleet":"Mining Fleet",
+	"exerelinInvasionFleet":"Флот вторжения",
+	"exerelinInvasionSupportFleet":"Ударный флот",
+	"exerelinResponseFleet":"Флот реагирования",
+	"exerelinDefenceFleet":"Оборонительный флот",
+	"exerelinMiningFleet":"Майнерский флот",
 	
-	"nex_colonyFleet":"Colony Fleet",
-	"nex_reliefFleet":"Relief Convoy",
-	"nex_specialForces":"Special Task Group",
+	"nex_colonyFleet":"Колониальный флот",
+	"nex_reliefFleet":"Гуманитарный конвой",
+	"nex_specialForces":"Специальная тактическая группа",
 	
-	"nex_vultureFleet":"Vulture Scavengers",
+	"nex_vultureFleet":"Vulture Мусорщики",
 }

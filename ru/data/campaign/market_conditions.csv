@@ -1,18 +1,18 @@
 name,id,planetary,decivRemove,script,desc,icon,order
 #Templar Control,exerelin_templar_control,,,exerelin.campaign.econ.TemplarControl,The Templars exert all-pervasive control over every aspect of the markets they hold. Increases stability and removes stability penalty from smuggling. Creates some demand for marines to enforce order.,graphics/templars/icons/intel/tem_crusade_event.png,31
-Rebellion,nex_rebellion_condition,,TRUE,exerelin.campaign.econ.RebellionCondition,"A rebellion is ongoing on $market.
+Восстание,nex_rebellion_condition,,TRUE,exerelin.campaign.econ.RebellionCondition,"На $market идёт восстание.
 
-- Stability reduced by $stabilityPenalty
-- Increased price of marines, heavy armaments and supplies; black market sales will strengthen rebels, direct sales to base officials will strengthen government",graphics/icons/markets/pirate_moot.png,1002
-Raiding,nex_raid_condition,,TRUE,exerelin.campaign.econ.RaidCondition,"Hostile raiding fleets are active in the system, disrupting commerce and other activities.",graphics/icons/markets/pirate_activity.png,1301
-Reinforced Defenses,nex_reinforced_defenses,,TRUE,exerelin.campaign.econ.ReinforcedDefenses,"The ground defenses of $market have been reinforced with personnel and heavy armaments, likely in anticipation of a hostile incursion.",graphics/icons/markets/mercenaries.png,1004
-Tribute,nex_tribute,,TRUE,exerelin.campaign.econ.TributeCondition,"$market is paying the locally dominant faction a regular tribute for the right to continue existing. Foreign authorities are keeping tight restrictions on local population growth, to keep the colony at a ""manageable"" size.
+- Стабильность снижена на $stabilityPenalty
+- Повышенные цены на десант, тяжёлое вооружение и припасы; продажи на чёрном рынке укрепят повстанцев, прямые продажи должностным лицам базы укрепят правительство",graphics/icons/markets/pirate_moot.png,1002
+Набеги,nex_raid_condition,,TRUE,exerelin.campaign.econ.RaidCondition,"В системе действуют враждебные рейдовые флоты, нарушающие торговлю и другие виды деятельности.",graphics/icons/markets/pirate_activity.png,1301
+Усиленная оборона,nex_reinforced_defenses,,TRUE,exerelin.campaign.econ.ReinforcedDefenses,"Наземная оборона $market была усилена личным составом и тяжелым вооружением, вероятно, в преддверии враждебного вторжения.",graphics/icons/markets/mercenaries.png,1004
+Дань,nex_tribute,,TRUE,exerelin.campaign.econ.TributeCondition,"$market выплачивает регулярно дань местной доминирующей фракции за право продолжать существовать. Иностранные власти жестко ограничивают рост местного населения, чтобы колония оставалась «управляемого» размера.
 
-Tribute may be canceled if the player chooses to terminate the agreement, or changing circumstances make it no longer applicable.",graphics/exerelin/icons/intel/lose_credits.png,1003
-Faction Condition,nex_faction_condition,,TRUE,exerelin.campaign.econ.FactionConditionPlugin,,,1005
+Выплата дани может быть отменена, если игрок решит расторгнуть соглашение, или изменение обстоятельств сделает его неприменимым.",graphics/exerelin/icons/intel/lose_credits.png,1003
+Состояние фракции,nex_faction_condition,,TRUE,exerelin.campaign.econ.FactionConditionPlugin,,,1005
 ,,,,,,,
 # vanilla override,,,,,,,
-Pirate Activity,pirate_activity,,TRUE,exerelin.campaign.intel.NexPirateActivity,"There have been signs that pirates are targeting shipping and colonies in this system - from port inspectors being pressured to turn a blind eye, to inconsistencies in cargo manifests, to other increased criminal activity.
+Пиратская активность,pirate_activity,,TRUE,exerelin.campaign.intel.NexPirateActivity,"Появились признаки того, что пираты нацелены на судоходство и колонии в этой системе - от давления на портовых инспекторов, чтобы они закрывали глаза, до несоответствий в грузовых манифестах и других признаков возросшей преступной деятельности.
 
-The pirates most likely have a base somewhere relatively nearby.",graphics/icons/markets/pirate_activity.png,1300
-Comm Relay (hidden),comm_relay,,TRUE,exerelin.campaign.econ.NexCommRelayCondition,"Hidden condition, does not need icon.",,
+Скорее всего, у пиратов есть база где-то поблизости.",graphics/icons/markets/pirate_activity.png,1300
+Комм-реле (скрытое),comm_relay,,TRUE,exerelin.campaign.econ.NexCommRelayCondition,"Скрытое условие, не требует значка.",,

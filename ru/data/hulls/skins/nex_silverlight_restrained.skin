@@ -4,7 +4,7 @@
   "builtInWeapons": {
     "WS0008": "rifttorpedo"
   },
-  "descriptionPrefix": "The variant of the Silverlight first encountered by the Persean Sector, restraining its true power.",
+  "descriptionPrefix": "Вариант Silverlight, впервые встреченный в Персейском секторе, сдерживающий его истинную силу.",
   "fighterBays": 0,
   "fleetPoints":40,
   "ordnancePoints":350,

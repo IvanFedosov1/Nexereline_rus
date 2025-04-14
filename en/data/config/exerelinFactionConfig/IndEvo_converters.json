@@ -1,9 +1,0 @@
-{
-    "playableFaction":false,
-	"startingFaction":false,
-    "pirateFaction":false,
-    "corvusCompatible":true,
-    "raidsFromBases":false,
-    "showIntelEvenIfDead":false,
-    "hostileToAll":3,
-}

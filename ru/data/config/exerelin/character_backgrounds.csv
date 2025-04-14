@@ -1,0 +1,4 @@
+id,name,shortDescription,longDescription,order,iconPath,plugin
+nex_none,Unknown,"Begin without an existing story. You are unknown to the Sector at large, free to shape your own future.","No predefined background. Begin with your selected faction without any additional changes.",-10000,graphics/factions/crest_player_flag.png,exerelin.campaign.backgrounds.UnknownCharacterBackground
+nex_unpaid_debt,Heavy Debt,"Lingering debt from your previous life still follows you. You hope to escape it someday.","Indebted to a famous pirate captain, you are unlikely to ever meet their increasingly insane demands for repayment. Every month, a level-dependent number of credits will be subtracted from your coffers. Replaces ""Spacer obligation"" if enabled.",100,graphics/icons/missions/smuggle.png,exerelin.campaign.backgrounds.HeavyDebtBackground
+,,,,,,

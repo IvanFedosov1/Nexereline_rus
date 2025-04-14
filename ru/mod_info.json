@@ -1,28 +1,19 @@
 {
-	"id":"IndEvo", # internal id
-	"name":"Industrial.Evolution", # displayed to the player
-	"author":"SirHartley",
-	"version":"4.0.f",
-	"description":"Expands the available campaign content through addition of buildings, interactions, abilities, events, terrain and exploration content.",
-	"gameVersion":"0.98a",
-	"jars":["jars/IndEvo.jar"],
-	"modPlugin":"indevo.utils.ModPlugin",
-	"dependencies": [
-		{
-			"id": "lw_lazylib",
-			"name": "LazyLib",
-		},
-		{
-			"id": "MagicLib",
-			"name": "MagicLib",
-		},
-		{
-			"id": "lunalib",
-			"name": "LunaLib",
-		},
-		{
-			"id": "shaderLib",
-			"name": "GraphicsLib",
-		},
-	],
+    "id":"nexerelin",
+    "name":"Nexerelin",
+    "author":"Histidine (original by Zaphide)",
+    "version":{
+        "major":0,
+        "minor":12, 
+        "patch":"0"
+    },
+    "description":"Join a faction and conquer the Sector!",
+    "gameVersion":"0.98a-RC7",
+    "totalConversion":false,
+    "jars":["jars/ExerelinCore.jar"],
+    "dependencies": [
+        {"id": "lw_lazylib", "name": "LazyLib"},
+        {"id": "MagicLib", "name": "MagicLib"},
+    ],
+    "modPlugin":"exerelin.plugins.ExerelinModPlugin",
 }

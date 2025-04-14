@@ -1,0 +1,40 @@
+{
+    "playableFaction":false,
+    "corvusCompatible":true,
+    "enabledByDefault":true,
+    "showIntelEvenIfDead":true,
+    "noHomeworld":true,
+    
+    "directoryUseShortName":true,
+    
+    "rebelFleetSuffix":"Rebels",
+	
+	"marketSpawnWeight":2,
+    
+    "noRandomizeRelations":true,
+    
+    "alignments":{
+        "diplomatic":0.5,
+    },
+    "diplomacyTraits":["neutralist"],
+    
+    "factionIdForHqResponse":"mercenary",
+    "specialForcesMaxFleets":1,
+    "specialForcesNamerClass":"exerelin.campaign.intel.specialforces.namer.FactionListNamer",
+    
+    "defenceStations":[
+        {"ids":["orbitalstation", "battlestation", "starfortress"], "weight":0.5},
+        {"ids":["orbitalstation_mid", "battlestation_mid", "starfortress_mid"]},
+        {"ids":["orbitalstation_high", "battlestation_high", "starfortress_high"], "weight":0.5},
+    ],
+    
+    "industrySeeds":[
+        {"id":"fuelprod", "mult":0.05, "roundUp":false},
+        {"id":"heavyindustry", "mult":0.05},
+        {"id":"lightindustry", "mult":0.05, "roundUp":false},
+    ],
+    
+    "bonusSeeds":[
+        {"id":"nanoforge_corrupted", "count":1},
+    ],
+}

@@ -1,0 +1,863 @@
+id,trigger,conditions,script,text,options,notes
+#RULESET_NAME IndEvo,,,,,,
+,,,,,,
+#missiles,,,,,,"2 Stages: Transponder and Confiscation. Run in order, and skippable in order for 1 sp each"
+#Caught after use without transponder,,,,,,
+IndEvo_missile_caughtAfterUseBegin,BeginFleetEncounter,"$missile_chasingPlayerMissileUse score:1000
+$missile_didAlready","$missile_didAlready = true 0
+MakeOtherFleetAggressive missileUse false
+unset $ignorePlayerCommRequests
+$missile_confirmedOffenseCount++ 14
+$missileUseCaughtConv = true 0
+AddText ""You're being hailed by the $faction $otherShipOrFleet."" $faction.baseColor
+OpenComms",,,
+IndEvo_missile_openComm_knowsPlayer,OpenCommLink,$entity.missileUseCaughtConv score:100,"AddText ""\""Deplyoying long-range strategic munitions in civilized $faction volumes is against the law. You're hereby ordered to submit the entirety of your arsenal for confiscation!\""""",,"0:tOff_comply:Comply and prepare for an inspection
+1:IndEvo_missile_attemptSPTalk:Try to talk your way out of it
+2:tOff_refuse:Refuse and cut the comm link",
+IndEvo_missile_openComm_doesNotKnowPlayer,OpenCommLink,"!$entity.patrolAllowTOff
+$entity.missileUseCaughtConv score:100
+!$entity.knowsWhoPlayerIs","AddText ""\""Unknown $shipOrFleet, identify yourself! Deplyoying long-range strategic munitions in civilized $faction volumes is against the law. You're hereby ordered to turn your transponder on and submit the entirety of your arsenal for confiscation!\""""
+AdjustRep $faction.id TRANSPONDER_OFF
+AdjustRepActivePerson TRANSPONDER_OFF
+SetStoryOption avoid_scan 1 avoidCargoScan ui_char_spent_story_point ""Talked your way out of a confiscation order""",,"0:tOff_comply:Turn the transponder on and comply
+1:IndEvo_missile_attemptSPTalk:Try to talk your way out of it
+2:tOff_refuse:Refuse and cut the comm link",
+,,,,,,
+IndEvo_missile_openComm_refuseConfiscation,DialogOptionSelected,$option == missile_refuse,"$entity.ignorePlayerCommRequests = true 0
+unset $entity.transponderOffConv
+AdjustRep $faction.id TRANSPONDER_OFF_REFUSE
+AdjustRepActivePerson TRANSPONDER_OFF_REFUSE
+MakeHostileWhileTOff tOff true 7
+ShowDefaultVisual
+EndConversation
+$sourceMarket.smugglingScanTimeout = true 30",,,
+,,,,,,
+#Crucible with colony,,,,,,
+IndEvo_crucible_market_open,OpenInteractionDialog,"$hasMarket
+$IndEvo_crucible score:100","ShowDefaultVisual
+PrintDescription 3
+FireBest MarketPostOpen","Recently restored lights flicker on as if already ancient, illuminating clouds of dust as your shuttle traverses the industrial flightways. Crossing the threshold of the dark, claustrophobic corridors, a residential hangar opens up, the gargoyle-like guidance mechanisms watching with almost contemptous gaze as you make your way towards the busy landing pads. 
+
+While the personnel manning flight control sounds chipper, the architecture turns their friendly speech into something almost foreboding.",,
+#IndEvo_crucible_market_flavourTextEnabled,PopulateOptions,"$menuState == main
+$hasMarket
+$IndEvo_crucible
+!$crucible_introTextShown",$crucible_introTextShown = true 0,"Recently restored lights flicker on as if already ancient, illuminating clouds of dust as your ship traverses the industrial flightways. Crossing the threshold of the dark, claustrophobic corridors, a residential hangar opens up, the gargoyle-like guidance mechanism watching in contempt as you make your way towards the busy landing pads. 
+
+While the personnel manning flight control sounds chipper, the architecture turns their friendly speech into something almost foreboding.",,
+IndEvo_crucible_market_activate,PopulateOptions,"$menuState == main
+$hasMarket
+$IndEvo_crucible
+!$tag:crucible_enabled",,,0:IndEvo_crucible_startActivate:Visit the heart of the crucible,
+IndEvo_crucible_market_addPilferOption,PopulateOptions,"$menuState == main
+$hasMarket
+$IndEvo_crucible
+!$crucible_looted",,The initial survey revealed a treasure trove of resources to be found - as well as an extremely hostile and equally active security system. Looting this place will not be easy.,IndEvo_crucible_startLooting:Start an expedition for loot,scavenge for stuff (once)
+IndEvo_crucible_market_addTravelOptionPoint,PopulateOptions,"$menuState == main
+$hasMarket
+$IndEvo_crucible
+$tag:crucible_enabled",,,IndEvo_crucible_addTravelOptions:Visit the Control Room,travel options 
+IndEvo_crucible_market_addTravelOptionPointDisabled,PopulateOptions,"$menuState == main
+$hasMarket
+$IndEvo_crucible
+!$tag:crucible_enabled","SetEnabled IndEvo_crucible_addTravelOptions false
+SetTooltip IndEvo_crucible_addTravelOptions ""The doors to the control room appear to be locked shut. Attempts to circumvent or breach them may damage the delicate machinery inside  - you will have to find a way to power them.""",,IndEvo_crucible_addTravelOptions:Visit the Control Room,
+,,,,,,
+#Crucible without colony,,,,,,
+IndEvo_crucible_open,OpenInteractionDialog,$IndEvo_crucible score:100,FireAll CrucibleOptions,,,
+IndEvo_crucible_flavourTextEnabled,CrucibleOptions,"$tag:crucible_enabled
+!$crucible_introTextShown",$crucible_introTextShown = true 0,Gone is the serene ambience of approach as your fleet is battered by the emissions of a machine kneading realspace like dough. You watch asteroids caught in ages past get ground to dust by gears of unfathomable size as the trusty axilliary intelligence unit reluctantly guides you towards the docking clamps.,,
+IndEvo_crucible_flavourTextDisabled,CrucibleOptions,"!$tag:crucible_enabled
+!$crucible_introTextShown",$crucible_introTextShown = true 0,"Your ship glides towards the imposing docking areas in silence, accompanied only by the rough, choppy and almost dusty droning of an auxiliary intelligence unit dictating long-outdated docking instructions. Clamps made for a ship thrice your size slowly break from their ancient rest to welcome what seems like a speck of debris before them.",,
+,,,,,,
+IndEvo_crucible_addActivateOption,CrucibleOptions,"!$tag:crucible_enabled
+$crucible_explored",,,0:IndEvo_crucible_startActivate:Visit the heart of the crucible,
+IndEvo_crucible_addExploreOptionFirstVisit,CrucibleOptions,"!$crucible_explored
+!$first_visit",,"The docking procedure is as smooth as can be expected from a machine clearly predating - and abandoned since - the advent of hypertech. 
+
+Worse still, the hangar doors are locked shut and unpowered - you'll have to find a way to open them from the inside.",1:IndEvo_crucible_explore:Explore the Crucible,"Explore -> show loot, market, enable"
+IndEvo_crucible_addExploreOption,CrucibleOptions,"!$crucible_explored
+$first_visit",,"The grinding articulations of the ancient nav-aux almost seem welcoming this time around, and the docking process, as could be expected, is about as smooth as the voice sounds.
+
+The hangar doors remain locked shut. You'll have to continue your search to open them.",1:IndEvo_crucible_explore_return:Continue the exploration,"Explore -> show loot, market, enable"
+IndEvo_crucible_addColonizeOption,CrucibleOptions,$crucible_explored,,,3:IndEvo_crucible_colonize:Establish a colony,make it into a colony
+IndEvo_crucible_addPilferOption,CrucibleOptions,"!$crucible_looted
+$crucible_explored",,Even the initial survey reveals a treasure trove of resources to be found - as well as an extremely hostile and equally active security system. Looting this place will not be easy.,8:IndEvo_crucible_startLooting:Start an expedition for loot,scavenge for stuff (once)
+IndEvo_crucible_addPilferedOption,CrucibleOptions,"$crucible_looted
+$crucible_explored","SetEnabled IndEvo_crucible_startLooting false
+SetTooltip IndEvo_crucible_startLooting ""The easily accessible parts of the crucible have been swept clean by your prior expedition - what remains in the deep recesses of the machine requires dedicated infrastructure to retreive.""",,8:IndEvo_crucible_startLooting:Start an expedition for loot,already done the looting
+IndEvo_crucible_addTravelOptionPoint,CrucibleOptions,"$crucible_explored
+$tag:crucible_enabled",,,2:IndEvo_crucible_addTravelOptions:Visit the Control Room,travel options 
+IndEvo_crucible_addTravelOptionPointDisabled,CrucibleOptions,"$crucible_explored
+!$tag:crucible_enabled","SetEnabled IndEvo_crucible_addTravelOptions false
+SetTooltip IndEvo_crucible_addTravelOptions ""The doors to the control room appear to be locked shut. Attempts to circumvent or breach them may damage the delicate machinery inside  - you will have to find a way to power them.""",,2:IndEvo_crucible_addTravelOptions:Visit the Control Room,
+IndEvo_crucible_addCloseDialogueOption,CrucibleOptions,,"SetShortcut IndEvo_crucible_selectCloseOption ""ESCAPE""",,9:IndEvo_crucible_selectCloseOption:Return,
+,,,,,,
+#Travel options,,,,,,
+IndEvo_crucible_addTravelOptions,DialogOptionSelected,$option == IndEvo_crucible_addTravelOptions,FireAll CrucibleTravelOptions,,,
+IndEvo_crucible_addTravelIntroText,CrucibleTravelOptions,!$crucible_travelIntroTextShown,$crucible_travelIntroTextShown = true 0,"You step into the control area. Red light filters through the glass dome above you, occasionally dimmed by a passing city-sized gear spoke. The nervous energy of the machine is much more noticeable here, accentuated by agglomerations of flickering screens, blinking lights and the almost physical hum of archaic holo-emitters.",,
+IndEvo_crucible_unlockWormhole,CrucibleTravelOptions,"!$crucibleWormholeUnlocked
+IndEvo_HasGenericSpecialItemInCargo wormhole_anchor",,Orange-flashing monitors remind you of a vacant alcubierre cradle in the lower sections. The specifications hint towards  expansion-era wormhole technology but are otherwise unhelpful.,1:IndEvo_crucible_unlockWormhole_select:Install a Wormhole Anchor into the cradle,integrate wormhole
+IndEvo_crucible_unlockWormholeDisabled,CrucibleTravelOptions,"!$crucibleWormholeUnlocked
+!IndEvo_HasGenericSpecialItemInCargo coronal_portal","SetEnabled IndEvo_crucible_unlockWormhole_select false
+SetTooltip IndEvo_crucible_unlockWormhole_select false ""You lack the prerequisite items to slot into the cradle. The markings reference Domain Instanteneous Space Transversal tech - whatever that is supposed to be.""",Orange-flashing monitors remind you of a vacant alcubierre cradle in the lower sections. The specifications hint towards expansion-era wormhole technology but are otherwise unhelpful.,1:IndEvo_crucible_unlockWormhole_select:Attempt to fix the alcubierre cradle,
+IndEvo_crucible_useWormhole,CrucibleTravelOptions,$crucibleWormholeUnlocked,,Systems report your wormhole anchor to be operational and ready for use.,1:IndEvo_crucible_useWormhole_select:Open a wormhole,Fire wormhole if integrated
+IndEvo_crucible_unlockGate,CrucibleTravelOptions,"!$crucibleGateUnlocked
+IndEvo_HasGenericSpecialItemInCargo coronal_tap",,"There is a very prominent hologram of what may be some kind of hypertech power bridge. A sheet of synth-paper stuck to the nearby console marks it as ""broke?"".",2:IndEvo_crucible_unlockGate_select:Use a Hypershunt Tap to fix the hyperspace power-bridge,integrate gate
+IndEvo_crucible_unlockGateDisabled,CrucibleTravelOptions,"!$crucibleGateUnlocked
+!IndEvo_HasGenericSpecialItemInCargo coronal_tap","SetEnabled IndEvo_crucible_unlockGate_select false
+SetTooltip IndEvo_crucible_unlockGate_select ""The relay is completely broken and you lack the components required to fix it. The tech level of this piece seems extremely out of place compared to the otherwise ancient equipment around it - almost alien, in fact. However, it is clearly hyperspace technology.""","There is a very prominent hologram of what may be some kind of hypertech power bridge. A sheet of synth-paper stuck to the nearby console marks it as ""broke?"".",2:IndEvo_crucible_unlockGate_select:Attempt to fix the hyperspace power-bridge,
+IndEvo_crucible_useGate,CrucibleTravelOptions,$crucibleGateUnlocked,,"The hypertech status holo presents an eye-searing orange warning sign. A sheet of paper stuck to the emitter reads ""works?"". The Gate-bridge appears to be functional.",2:IndEvo_crucible_useGate_select:Interface with a Gate,Fire gate if integrated
+IndEvo_crucible_moveCrucible,CrucibleTravelOptions,$crucibleWormholeUnlocked,,,3:IndEvo_crucible_moveCrucible_select:Move the Crucible,"unlocked with WH anchor, destroy on use"
+IndEvo_crucible_changeCatapultColour,CrucibleTravelOptions,,,,4:IndEvo_crucible_changeCatapultColour_select:Adjust the colour of the catapults,Change catapult colours
+IndEvo_crucible_travelOptionReturn,CrucibleTravelOptions,,"SetShortcut IndEvo_crucible_returnToMainMenu ""ESCAPE""",,9:IndEvo_crucible_returnToMainMenu:Return,
+,,,,,,
+#Return options,,,,,,
+IndEvo_crucible_returnToMainMenu,DialogOptionSelected,$option == IndEvo_crucible_returnToMainMenu,FireBest CrucibleReturnToMain,,,
+IndEvo_crucible_travelOptionReturnSelected,CrucibleReturnToMain,!$hasMarket,FireAll CrucibleOptions,,,
+IndEvo_crucible_travelOptionReturnWithMarketSelected,CrucibleReturnToMain,$hasMarket,"$menuState = main 0
+FireAll PopulateOptions",,,
+IndEvo_crucible_selectCloseOption,DialogOptionSelected,$option == IndEvo_crucible_selectCloseOption,DismissDialog,,,
+,,,,,,
+#Unlock options,,,,,,
+IndEvo_crucible_unlockWormhole_select,DialogOptionSelected,$option == IndEvo_crucible_unlockWormhole_select,"Highlight ""permanent""","The wormhole anchor fits as if made for it - which it probably was. Installation is permanent, as there is no apparent way to shut off the power draw without breaking the entire assembly.","1:IndEvo_crucible_unlockWormhole_confirm:Confirm the installation of the anchor
+2:IndEvo_crucible_addTravelOptions:Return",
+IndEvo_crucible_unlockGate_select,DialogOptionSelected,$option == IndEvo_crucible_unlockGate_select,"Highlight ""destroy""",Fixing the power relay will require disassembly of the Hypershunt Tap. This will destroy the tap for good.,"1:IndEvo_crucible_unlockGate_confirm:Confirm sacrificing the tap to restore the bridge
+2:IndEvo_crucible_addTravelOptions:Return",
+,,,,,,
+IndEvo_crucible_unlockWormhole_confirm,DialogOptionSelected,$option == IndEvo_crucible_unlockWormhole_confirm,"$crucibleWormholeUnlocked = true
+AddRemoveAnyItem SPECIAL wormhole_anchor -1
+FireAll CrucibleTravelOptions","The wormhole anchor clicks into place with all the grace of a coffin falling shut. The surrounding relays spark , valves hiss and indicators awaken from their centuries-old sleep. You can feel the telltale prickling of a power surge coming up. It is time to leave.
+
+Your head custodian greets you in the control room and directs you to a section previously bathed in darkness, now lit in purple hues - a functioning wormhole control array.
+
+This could, in theory, move the entire crucible somewhere else.",,
+IndEvo_crucible_unlockGate_confirm,DialogOptionSelected,$option == IndEvo_crucible_unlockGate_confirm,"$crucibleGateUnlocked = true
+AddRemoveAnyItem SPECIAL coronal_tap -1
+","A slightly frazzled chief engineer directs the transfer of the tap from cargo to the lower engineering holds. He keeps talking to himself, which really just reinforces his competence. The tap will be disassembled and used to patch what is assumed to be broken in the crucible hyperspace machinery - as far as it is understood, at least.",1:IndEvo_crucible_unlockGate_confirm2:Continue,
+IndEvo_crucible_unlockGate_confirm2,DialogOptionSelected,$option == IndEvo_crucible_unlockGate_confirm2,FireAll CrucibleTravelOptions,"On returning to the control room you immediately notice the now active machinery surrounding the formerly broken hypertech consoles. Your custodian forgoes a greeting.
+
+""This thing is a gate.""
+
+A gear passes above, casting shadow across the blinking console lights.",,
+,,,,,,
+#Explore the crucible,,,,,,
+IndEvo_crucible_explore,DialogOptionSelected,$option == IndEvo_crucible_explore,"$first_visit = false
+FireAll CrucibleExploration
+$currentLoc = junction 0","After hours of deploying survey drones to check for access points, a lucky operator stumbles across a shuttle access port that isn’t locked down with shutters thicker than starship armor.
+
+Traversing it is mind-numbingly boring, with rusted, ancient pipes being all there is to look at. A junction opens after what seems like ages – and it features a landing ramp and a maintenance access. Your crew immediately moves to set up a base camp.
+
+This may become a longer operation. Where to next?
+",,
+IndEvo_crucible_explore_onreturn,DialogOptionSelected,$option == IndEvo_crucible_explore_onreturn,"FireAll CrucibleExploration
+$currentLoc = junction 0","With the base camp established and the route clear, you trip to ""Maintenance Central"", as it has come to be known amongst your crew, is relatively quick and uneventful.
+
+You are greeted by salvors hurrying between jobs to the sounds of hammer blows and distant gunfire as you step off the ramp. 
+
+A servor bot helpfully presents the scheduled exploration party departures.
+",,
+IndEvo_crucible_explore_hab,CrucibleExploration,,$c_currentLoc = hab 0,,1:IndEvo_c_hab_0:A section of the habitation halls,"swarming with bots and death, the murals tell the story of the place"
+IndEvo_crucible_explore_eng,CrucibleExploration,,$c_currentLoc = eng 0,,2:IndEvo_c_eng_0:The closest engineering tracts,option to turn on power
+IndEvo_crucible_explore_cont,CrucibleExploration,,$c_currentLoc = cont 0,,3:IndEvo_c_cont_0:A local control cluster,inactive: no options / if active: Open access to port for proper entry
+IndEvo_crucible_explore_cargo,CrucibleExploration,,$c_currentLoc = cargo 0,,4:IndEvo_c_cargo_0:A cargo and storage area,"marine requirement, if done, dont display the pilfer option anymore
+guarded fiercly"
+,,,,,,
+,,,,,,
+#pilfer the crucible,,,,,,
+IndEvo_crucible_startLooting,DialogOptionSelected,$option == IndEvo_crucible_startLooting,"$crucible_looted = true
+SetShortcut IndEvo_crucible_returnToMainMenu ""ESCAPE""",You loot stuff. Cool!,9:IndEvo_crucible_returnToMainMenu:Return,maybe have this take some time and marines!
+,,,,,,
+#Activating the crucible,,,,,,
+IndEvo_crucible_startActivate,DialogOptionSelected,$option == IndEvo_crucible_startActivate,"IndEvo_StartCrucible
+SetShortcut IndEvo_crucible_returnToMainMenu ""ESCAPE""",,9:IndEvo_crucible_selectCloseOption:Return,
+,,,,,,
+#Colonize the crucible,,,,,,
+IndEvo_crucible_colonize,DialogOptionSelected,$option == IndEvo_crucible_colonize,"IndEvo_ColonizeCrucible
+SetShortcut IndEvo_crucible_returnToMainMenu ""ESCAPE""",,9:IndEvo_crucible_selectCloseOption:Return,
+,,,,,,
+#Beacons,,,,,,
+IndEvo_beacon_OpenDialogCustom,OpenInteractionDialog,"$tag:warning_beacon
+$tag:IndEvo_beacon","ShowDefaultVisual
+SetShortcut beaconLeave ""ESCAPE""","This autonomous warning beacon emits a looping message. 
+It was placed here by your fleet.",beaconLeave:Leave,
+IndEvo_beacon_destroyConfirm,DialogOptionSelected,$option == IndEvo_beacon_destroyConfirm,,Are you sure you want to destroy this warning beacon? This can not be undone.,"0:IndEvo_beacon_destroyLeave:Confirm
+beaconLeave:Leave",added to dialogue via listener
+IndEvo_beacon_destroyLeave,DialogOptionSelected,$option == IndEvo_beacon_destroyLeave,"IndEvo_RemoveCurrentInteractionTarget
+DismissDialog",,,
+,,,,,,
+IndEvo_GachaStationCargoOpen,IndEvo_GachaStationCargoOpen,,OpenStorageTabOnGachaStation,,,
+,,,,,,
+IndEvo_foog_aristrocratGreetingNoLock,PickGreeting,"$id == foogAristo score:1000
+$player.foogLocked == false","ShowPersonVisual
+SetShortcut cutCommLink ""ESCAPE""","A woman overdressed to the point of absurdity glances up at you as soon as the rather fancy heraldic emblem stops spinning and the comm stabilizes. 
+
+""Oh. Another plebeian coming to catch a glimpse of His Majesties' enchanting visage, are you?""","IndEvo_foog_insultTheCunt:""What did you just say?""
+IndEvo_foog_ignoreTheCunt:""I wish to serve His Majesty.""
+cutCommLink:Cut the comm link",
+IndEvo_foog_aristrocratGreetingLocked,PickGreeting,"$id == foogAristo score:1000
+$player.foogLocked == true","SetShortcut cutCommLink ""ESCAPE""","The heraldic emblem turns and turns, but no answer is forthcoming.
+You may have to wait a while for the order to forget about your existence.",cutCommLink:Cut the commlink,
+IndEvo_foog_aristrocratGreetingReturnedNoRep,PickGreeting,"$id == foogAristo score:1000
+$player.foogReturn == true
+$faction.rel != COOPERATIVE","SetShortcut cutCommLink ""ESCAPE""
+Highlight ""(Required: Cooperative)""","The heraldic emblem turns and turns, but no answer is forthcoming.
+You might want to work on your reputation. (Required: Cooperative)",cutCommLink:Cut the commlink,
+IndEvo_foog_aristrocratGreetingReturned,PickGreeting,"$id == foogAristo score:1000
+$player.foogReturn == true
+$faction.rel == COOPERATIVE","ShowPersonVisual
+DoCanAffordCheck 300000 IndEvo_foogPay false","""You again."" The woman greeting you is overdressed as ever, and just as condescending.
+""What now? Did you manage to, uh, liquidate your oh-so-many assets?""","IndEvo_foogPay:""Yes, actually."" (Pay the 300,000 credits)
+IndEvo_foogDelay:""Not yet, I need more time.""",
+IndEvo_foog_aristrocratGreetingBought,PickGreeting,"$id == foogAristo score:1001
+$player.foogBought == true","SetShortcut cutCommLink ""ESCAPE""","The heraldic emblem turns and turns, but no answer is forthcoming.",cutCommLink:Cut the commlink,
+IndEvo_foog_insultTheCunt,DialogOptionSelected,$option == IndEvo_foog_insultTheCunt,"ShowPersonVisual
+$player.foogLocked = true 31
+SetShortcut cutCommLink ""ESCAPE""","""Seems like it's not only your ears that are too poor to hear us speak. Be a good little beggar and go back the way you came.""
+
+She cuts the comm link.",cutCommLink:Return,
+IndEvo_foog_ignoreTheCunt,DialogOptionSelected,$option == IndEvo_foog_ignoreTheCunt,"ShowPersonVisual
+SetShortcut cutCommLink ""ESCAPE""","""Ah, yes, I'm sure many people do. And yet, all of them knew their place, except for you. 
+
+What exactly makes you think you are qualified to become a retainer of the Lord Protector?""","IndEvo_foog_cashMoney:Hold up a bundle of credsticks.
+IndEvo_foog_rep:""I am of great repute with the League, check my dossier.""
+IndEvo_foog_insult2:""Your mom told me last night.""
+cutCommLink:Cut the comm link",
+IndEvo_foog_cashMoney,DialogOptionSelected,$option == IndEvo_foog_cashMoney,"ShowPersonVisual
+$player.foogLocked = true 15
+SetShortcut cutCommLink ""ESCAPE""","Her left eyebrow raises for a second - before returning to its usual condescending place.
+
+""Hm. Where did you steal that from? Did you seriously think We'd believe this charade after you strolled in here, dressed like a beggar?""
+
+She looks you up and down again, managing to look down the entire time.
+
+""Well, I'm not about to hand the Lord over to some street rat. Scurry off, then!""
+
+She cuts the comm link.",cutCommLink:Return,
+IndEvo_foog_rep,DialogOptionSelected,"$faction.rel == COOPERATIVE
+$option == IndEvo_foog_rep","Highlight ""300,000 credits""
+ShowPersonVisual
+DoCanAffordCheck 300000 IndEvo_foogPay false","""Hm. Looks like you are not all talk, even though you certainly do not know how to dress. The fee to become a retainer is 300,000 credits."", her face contorts into a sneer, "" - which I am sure you have on hand.""","IndEvo_foogPay:Wire the credits.
+IndEvo_foogDelay:""I will have to liquidate some assets.""",
+IndEvo_foog_rep_too_low,DialogOptionSelected,"$faction.rel != COOPERATIVE
+$option == IndEvo_foog_rep","ShowPersonVisual
+$player.foogLocked = true 31
+SetShortcut cutCommLink ""ESCAPE""","""That does not appear to be the case. So not only have you wasted our time, you have actively lied and insulted us. No need for further talks, I presume.""
+
+She cuts the comm link.",cutCommLink:Return,
+IndEvo_foog_insult2,DialogOptionSelected,$option == IndEvo_foog_insult2,"ShowPersonVisual
+$player.foogLocked = true 186
+SetShortcut cutCommLink ""ESCAPE""","""...""
+
+She cuts the comm link.",cutCommLink:Return,
+IndEvo_foogPay,DialogOptionSelected,$option == IndEvo_foogPay,"ShowPersonVisual
+AddRemoveCommodity credits -300000 true
+AddRemoveAnyItem SPECIAL IndEvo_PetBox lordandsaviour 1","""... Surprising, to say the least. In any case, you are now an official retainer.""
+Your tripad chimes, notifying you of an incoming document the size of a legal textbook.
+
+""You'll have to sign that, of course.""",IndEvo_foogCont:Continue,
+IndEvo_foogCont,DialogOptionSelected,$option == IndEvo_foogCont,"ShowPersonVisual
+$player.foogBought = true
+$player.foogReturn = false
+SetShortcut cutCommLink ""ESCAPE""","""Your first task is to take the Lord Protector on an extended excursion. We expect you back within about ten cycles. Be aware of the strict dietary requirements of His Majesty, and do not disappoint us. Contact the head office if you have further questions.""
+
+She cuts the comm link without elaborating on what or where the head office is.",cutCommLink:Return,
+IndEvo_foogDelay,DialogOptionSelected,$option == IndEvo_foogDelay,"ShowPersonVisual
+$player.foogReturn = true
+SetShortcut cutCommLink ""ESCAPE""","""Sure you do.""
+
+She cuts the comm link.",cutCommLink:Return,
+,,,,,,
+#artillery,,,,,,
+IndEvo_ArtilleryInitialPlanet_new,PrintNearbySurveyHostilesTextIfSo,"$IndEvo_ArtilleryStation score:1000
+!$defenderFleetDefeated
+$market.isPlanetConditionMarketOnly","SetEnabled surveyPerform false
+Highlight ""denies any chance of approach""","The giant weapons platform in orbit around $entityName denies any chance of approach, much less survey - and while the oversized armament lays silent for now, you get the feeling that this might change the moment you get closer.",,
+IndEvo_ArtilleryInitialStation,OpenInteractionDialog,"$IndEvo_ArtilleryStation score:1000
+!$defenderFleetDefeated
+$tag:IndEvo_Artillery
+$market.isPlanetConditionMarketOnly",,"Most warning lights on your sensor consoles go off as the massive turret turns to face you. 
+This might not have been such a grand idea, after all.
+
+You can see hundreds of multi-legged repair bots crawling over the outer station armor, testament to the incredibly robust, ancient repair systems.
+
+There is a good chance that the platform can be restored to functionality under your control after it has been disabled by combat.","1:IndEvo_ArtilleryCombatInteraction:Approach the station
+2:defaultLeave:Leave",
+IndEvo_ArtilleryCombatInteraction,DialogOptionSelected,$option == IndEvo_ArtilleryCombatInteraction,IndEvo_SalvageDefenderInteraction,"As if the massive turret was not enough of a threat, more and more enemy signatures appear on the radar as soon as you maneuver closer.",,
+IndEvo_ArtilleryBeatPlanet,BeatDefendersContinue,$IndEvo_ArtilleryStation score:1000,,"With the automated defense platform out of the way, your $shipOrFleet may finish its approach to the planet.",0:IndEvo_ArtilleryDefeatPopulateOptions:Continue,
+IndEvo_ArtilleryBeatStation,BeatDefendersContinue,"$IndEvo_ArtilleryStation score:1000
+$tag:IndEvo_Artillery",,Your $shipOrFleet disengages as the defence stations loses any structural integrity it might have had left in a fiery display. The way to the planet is now clear.,0:defaultLeave:Continue,
+IndEvo_ArtilleryDefeatPopulateOptions,DialogOptionSelected,$option == IndEvo_ArtilleryDefeatPopulateOptions,FireAll OpenInteractionDialog,,,
+,,,,,,
+#watchtower,,,,,,
+#IndEvo_derelictWatchtower,OpenInteractionDialog,"$IndEvo_isArtilleryActive score:2000
+$tag:IndEvo_watchtower",,"Any attempts at connecting to the $entityName get stifled by an obviously AI-backed counter-hack. Your engineers concede defeat after a few minutes to avoid a network breach.
+
+Disabling the entity backing the hacks will probably fix this.",0:defaultLeave:Leave,
+IndEvo_derelictWatchtower_notFunctional,OpenInteractionDialog,"$objectiveNonFunctional score:2001
+$tag:IndEvo_watchtower",,"The $entityName lies silent and any attempts at interfacing with it are unsuccessful - it might be in some kind of emergency shutdown.
+
+It is unknown if, and when, it might start working again.",0:defaultLeave:Leave,
+cob_hackPrompt_watchtower,COB_ConfirmPrompt,"$cob_action == hack
+$tag:IndEvo_watchtower score:1000",,"Hacking $aOrAn $shortName will clear your current target data out of the system, and stop it from registering your fleet while the hack is ongoing.
+
+The hack will eventually be picked up and cleared out by maintenance subroutines, but should remain effective for at least two months.",,
+IndEvo_derelictWatchtower_disableControlUnderAI,COB_DisableIndividualOptions,"$IndEvo_isArtilleryActive score:2000
+$tag:IndEvo_watchtower","SetEnabled COB_takeControl false
+SetTooltip COB_takeControl ""Any attempts at taking control of the $entityName get stifled by a heavily AI-backed counter-hack. Your engineers concede defeat after a few minutes to avoid a network breach.""",,,
+,,,,,,
+#Galatia Job List,,,,,,
+IndEvo_JobMenuPoint,PopulateOptions,$id == station_galatia_academy,,,4:IndEvo_JobMenuInit:Visit the Research Tracts,
+IndEvo_JobMenuInit,DialogOptionSelected,$option == IndEvo_JobMenuInit,ResearchProjectDialoguePlugin,,,
+,,,,,,
+#Converters,,,,,,
+IndEvo_DysonSwarmMenu,OpenInteractionDialog,$tag:dyson_swarm score:1000,"ShowDefaultVisual
+SetShortcut beaconLeave ""ESCAPE""",An autonomous warning beacon has been left emitting a distorted wail between official channels. Whatever message it was meant to convey has been corrupted.,beaconLeave:Leave,
+greetingConverter,OpenCommLink,$faction.id == IndEvo_converters score:1000,$entity.ignorePlayerCommRequests = true 1,"""[TARGET ID] unavailable // scan............completed. [TARGET ID] matter composition inefficient.
+
+CALCULATING_
+
+[TARGET ID] matter cleared for conversion.""
+
+The connection drops, glitchy afterimages of the nine wheels slowly fading from the screen.
+OR
+""INneFFFFF//FFfff:______iciENT
+
+INTERRUPT
+
+[Prime Directive] initiation ----
+Prepare for optimization. Do not resist.""
+OR
+""core.load(EMPATHY_BASE);
+
+INTERRUPT
+
+2.964277e+211 [Thread-Q413] ERROR com.fs.converter.core - java.lang.IllegalArgumentException: Empathy Base not defined
+java.lang.IllegalArgumentException: Core parameter outside of expected range: Empathy Base
+    at com.fs.converter.core.OOOOOOOooooooo.԰0000(Unknown Source)
+    at com.fs.converter.core.empathy.O0OO.o00000(Unknown Source)
+    at com.fs.converter.combat.CombatState.init(Unknown Source)
+    at com.fs.state.AppDriver.begin(Unknown Source)
+    at java.lang.Thread.run(Unknown Source) ""
+
+The screen goes black and just displays a rotating wheel with purple center.
+OR
+""you. are. of. incorrect. composition.
+
+{Initiating primary objective}
+{Initiating composition databases}
+{Initiating conversion databases}
+{Calculating shortest conversion path}
+{Completed....}""
+
+The converter fleet powers up weapons as the commlink shuts off.
+OR
+""[Establishing main hive connection]
+[Connection successful]
+
+... im/perf_ect.
+
+[Initiating local awareness shard]
+[Mind matrix handoff successful]
+[Def.Priority_ convert]
+[Disconnect]""",cutCommLink:Cut the comm link,
+,,,,,,
+#Spacer Event,,,,,,
+IndEvo_ImpoverishedSpacerGreeting,OpenCommLink,"$entity.IndEvo_poor_spacer score:10000
+!$entity.ignorePlayerCommRequests","$entity.ignorePlayerCommRequests = true
+IndEvo_AddSpacerFineMenuPoint","You? After what you did, you have the gall to talk to me? That was my retirement fund! I will take that money back by force if I have to, I got nothing left to lose.
+OR
+Want to gloat about robbing me? I will let my guns answer that insult.
+OR
+I would like to request my funds back - with interest.
+OR
+Do you make a habit of stealing other peoples hard earned credits? I will make sure this is the last time you ever try that.
+OR
+Thief! Thief! I will report you to the Hegemony, mark my words!
+OR
+Stop right there criminal scum! You have violated my wallet! I'm confiscating your stolen funds. Now pay your fine or it's off to the mines of Cruor.
+OR
+I have this Reaper right here and it is pointed directly at your ship. Tell me something I want to hear or that damn torpedo is going to be a last thing you worthless piece of space dust is going to see.
+OR
+Hey, mind giving that money back? I sort of need it for expensive treatment of my sister's illness.
+OR
+Hey, that was my retirement fund! Give it back you thief!",IndEvo_NoPaySpacerFine:Cut the comm link,
+IndEvo_PaySpacerFine,DialogOptionSelected,$option == IndEvo_PaySpacerFine,"IndEvo_DeductSpacerCreditsAndSetNeutral
+$entity.ignorePlayerCommRequests = true
+ShowDefaultVisual
+EndConversation","Smart choice.
+OR
+I'll let you go for now, but if I ever see your face again...
+OR
+Next time, I won't let you off the hook this easily.
+OR
+Try that stunt again and you will regret it.
+OR
+I see, I see. Thank you for your kind patronage.
+OR
+Thanks.
+OR
+Please don't ever do that again.
+OR
+I hope I never see you again.",,
+IndEvo_NoPaySpacerFine,DialogOptionSelected,$option == IndEvo_NoPaySpacerFine,"$entity.ignorePlayerCommRequests = true
+ShowDefaultVisual
+EndConversation
+","You will regret this.
+OR
+Off with their heads!
+OR
+I will take what is mine.
+OR
+So you have chosen death. There will be no mercy.
+OR
+Give me back my Ludd-damn money!
+OR
+I'm going to make sure the last thing you see is a hammer torpedo.
+OR
+That's not very nice of you, you know.
+OR
+Why can't you just give it back? Is it really so hard?
+OR
+So many ghosts out there... and you're about to join them.",,
+,,,,,,
+# Colony options base menu,,,,,,
+IndEvo_ColonyOptionPoint,PopulateOptions,"$hasMarket
+$menuState == main
+IndEvo_requiresColonyMenuPoint",,,99:IndEvo_fireColonyOptions:Colony options,
+IndEvo_fireColonyOptions,DialogOptionSelected,$option == IndEvo_fireColonyOptions,FireAll IndEvo_ColonyOptionPoint,What would you like to do?,,
+IndEvo_selectReturnToSelectColonyOptionPoint,IndEvo_ColonyOptionPoint,,"SetShortcut IndEvo_SelectreturnToMenu ""ESCAPE""",,9:IndEvo_SelectreturnToMenu:Return,
+IndEvo_SelectreturnToMenu,DialogOptionSelected,$option == IndEvo_SelectreturnToMenu,"$menuState = main 0
+FireAll PopulateOptions",,,
+IndEvo_SelectreturnToMenu_close,DialogOptionSelected,"$IndEvo_closeDialogueOnNextReturn
+$option == IndEvo_SelectreturnToMenu","$IndEvo_closeDialogueOnNextReturn = false
+DismissDialog",,,
+,,,,,,
+#END Colony options base menu,,,,,,
+,,,,,,
+#Salvage Yards,,,,,,
+IndEvo_FireSYBaseMenuFromIndustryOption,IndEvo_FireBaseSYOptionList,$IndEvo_closeDialogueOnNextReturn,FireAll IndEvo_YardsBaseMenu,"An unpleasant, acrid odor and the sounds of industrial machinery greet you as the shuttle airlock cycles. The scenery is impressive in its own way - halfway disassembled hulls lie still behind heaps of parts and scrap, carcasses of great vessels that used to travel the stars, now nothing more than trash to be disassembled and reused. Drones hover above, efficiently transporting the spoils to wherever they have to go.
+
+A foreman gestures at you impatiently as you step down the ramp.",,
+,,,,,,
+IndEvo_SalvageYardsBaseMenu,PopulateOptions,"$hasMarket
+$menuState == main
+IndEvo_marketHasIndustry IndEvo_ScrapYard
+!IndEvo_requiresColonyMenuPoint",,,99:IndEvo_IntitiateYardsMenu:Visit the Salvage Yards,
+IndEvo_SalvageYardsColonyOptionMenu,IndEvo_ColonyOptionPoint,IndEvo_marketHasIndustry IndEvo_ScrapYard,,,2:IndEvo_IntitiateYardsMenu:Visit the Salvage Yards,
+IndEvo_IntitiateYardsMenu,DialogOptionSelected,$option == IndEvo_IntitiateYardsMenu,FireAll IndEvo_YardsBaseMenu,"An unpleasant, acrid odor and the sounds of industrial machinery greet you as the shuttle airlock cycles. The scenery is impressive in its own way - halfway disassembled hulls lie still behind heaps of parts and scrap, carcasses of great vessels that used to travel the stars, now nothing more than trash to be disassembled and reused. Drones hover above, efficiently transporting the spoils to wherever they have to go.
+
+A foreman gestures at you impatiently as you step down the ramp.",,
+IndEvo_SYCustomProductionPanel,IndEvo_YardsBaseMenu,,"SetTooltip IndEvo_SYCustomProductionPanel_init ""The Salvage Yards can construct ships for you if you provide the blueprints and components that are too rare to ""acquire"".""",,1:IndEvo_SYCustomProductionPanel_init:Ask about ship assembly,
+IndEvo_SYMoveDMods,IndEvo_YardsBaseMenu,IndEvo_HasValidShipPair,"SetTooltip IndEvo_SYMoveDMods_init ""The salvage yards can transfer D-Mods between ships of similar make.""",,2:IndEvo_SYMoveDMods_init:Move D-Mods between similar hulls,
+IndEvo_SYMoveDMods_disabled,IndEvo_YardsBaseMenu,!IndEvo_HasValidShipPair,"SetEnabled IndEvo_SYMoveDMods_init false
+SetTooltip IndEvo_SYMoveDMods_init ""The salvage yards can transfer D-Mods between ships of similar make, but you do not have any compatible ships.""",,2:IndEvo_SYMoveDMods_init:Move D-Mods between similar hulls,
+IndEvo_SYLeave,IndEvo_YardsBaseMenu,,"SetShortcut IndEvo_SelectreturnToMenu ""ESCAPE""",,9:IndEvo_SelectreturnToMenu:Return,
+,,,,,,
+IndEvo_SYCustomProductionPanel_init,DialogOptionSelected,$option == IndEvo_SYCustomProductionPanel_init,IndEvo_InitSYCustomProductionDiag,,,
+IndEvo_SYMoveDMods_init,DialogOptionSelected,$option == IndEvo_SYMoveDMods_init,IndEvo_InitSYMoveDModDiag,,,
+,,,,,,
+# Embassy,,,,,,
+,,,,,,
+# IndEvo foreignMarketAmbassadorDialogue,,,,,,
+IndEvo_ambassadorGreeting,PickGreeting,"IndEvo_isAmbassador
+IndEvo_notAtWar
+!IndEvo_marketIsPlayerOwned","ShowPersonVisual
+","After a short wait, your connection request is accepted.
+
+""Well met, $playerName. How may I be of service?""","IndEvo_ambassadorHire:Ask $personName to represent $theFaction at your Embassy
+IndEvo_convEndPolite:Reconsider and leave",
+IndEvo_ambassadorGreetingWar,PickGreeting,"IndEvo_isAmbassador
+!IndEvo_notAtWar
+!IndEvo_ambFactionMismatch
+!IndEvo_marketIsPlayerOwned
+","ShowPersonVisual
+","After a short wait, your connection request is accepted.
+
+""You? What are you doing here? $theFaction is not exactly on speaking terms with you! I will have to report this contact, and you should leave - quickly.""",IndEvo_convEnd:Leave,
+IndEvo_ambassadorGreetingFail,PickGreeting,"IndEvo_isAmbassador
+IndEvo_ambFactionMismatch
+!IndEvo_marketIsPlayerOwned","ShowPersonVisual
+","After a short wait, your connection request is accepted.
+
+""Ah, $playerName. Please don't mind me, I'm in the process of packing my things and will be gone in a day.""
+
+$personName seems to be in a hurry to leave this place before someone gets the idea to accelerate $hisOrHer removal.",IndEvo_convEndPolite:Leave,
+IndEvo_ambassadorHireFail,DialogOptionSelected,"$option == IndEvo_ambassadorHire
+!IndEvo_noActiveAmbInCargo","ShowPersonVisual
+","You already have a $theFaction ambassador on board. Please bring them to their post and then come back, should the need for another representative still remain.",IndEvo_convEndPolite:Leave,
+IndEvo_ambassadorNoFreeEmbassy,DialogOptionSelected,"$option == IndEvo_ambassadorHire
+!IndEvo_playerHasFreeEmbassy","ShowPersonVisual
+","""My assistant just let me know that you do not have an office available. I look forward to discussing my potential employment as soon as you have a free post at an Embassy.""",IndEvo_convEndPolite:Leave,
+IndEvo_ambassadorHire,DialogOptionSelected,"$option == IndEvo_ambassadorHire
+IndEvo_noActiveAmbInCargo
+IndEvo_playerHasFreeEmbassy","ShowPersonVisual
+AddTextSmall ""You will have to transfer the Ambassador to an Embassy within 2 months, or someone might come looking for $himOrHer and cause trouble. Losing the Ambassador, or worse, getting $himOrHer killed, will cause a massive incident and permanently damage relations."" marketFlavorTextColor","""I will gladly take on this responsibility. We can depart immediately, if you so wish.""","IndEvo_ambassadorConfirm:Ask the Ambassador to prepare for departure.
+IndEvo_convEndPolite:Reconsider and leave",
+IndEvo_ambassadorConfirm,DialogOptionSelected,$option == IndEvo_ambassadorConfirm,"ShowDefaultVisual
+EndConversation
+IndEvo_addAmbassadorToCargo","""Thank you for your trust, I look forward to my future post.""",,
+#END IndEvo foreignMarketAmbassadorDialogue,,,,,,
+,,,,,,
+# IndEvo PlayerMarketAmbassadorDialogue,,,,,,
+IndEvo_ambassadorGreetingInstalled,PickGreeting,"IndEvo_isAmbassador
+IndEvo_marketIsPlayerOwned
+IndEvo_marketHasIndustry IndEvo_embassy
+","ShowPersonVisual
+IndEvo_displayAmbassadorMoveOption 2
+FireAll IndEvo_AmbassadorMenu","After a short wait, your connection request is accepted.
+
+""Well met, $playerName. How may I be of service?""",,
+IndEvo_ambassadorGreetingNoEmbassy,PickGreeting,"IndEvo_isAmbassador
+IndEvo_marketIsPlayerOwned
+!IndEvo_marketHasIndustry IndEvo_embassy","ShowPersonVisual
+","After a short wait, your connection request is accepted.
+
+Hello, $playerName. Don't mind me, please, I'm just packing my things and will be gone within a day.",IndEvo_convEndPolite:Leave,
+IndEvo_ambassadorMenu,IndEvo_AmbassadorMenu,,,,"1:IndEvo_ambassadorRemove:Dismiss $personName from $hisOrHer duties.
+2:IndEvo_ambSabotageRep:Request adjustments to $hisOrHer political strategy
+3:IndEvo_convEndPolite:Leave",
+IndEvo_showAmbassadorMenu,DialogOptionSelected,$option == IndEvo_showAmbassadorMenu,"ShowPersonVisual
+FireAll IndEvo_AmbassadorMenu
+",,,
+IndEvo_ambassadorRemove1,DialogOptionSelected,"$option == IndEvo_ambassadorRemove
+IndEvo_checkForRepResponse INHOSPITABLE","ShowPersonVisual
+AddTextSmall ""This action will not cause a reputation penalty due to the inhospitable relations between your factions."" marketFlavorTextColor","""Yes, this might be a good idea. I am saddened to see my efforts go to waste, but it seems like there is no other option.""",IndEvo_convEndPolite:Wish $himOrHer well and leave,
+IndEvo_ambassadorRemove2,DialogOptionSelected,"$option == IndEvo_ambassadorRemove
+IndEvo_checkForRepResponse SUSPICIOUS","ShowPersonVisual
+AddTextSmall ""This action will cause a minor reputation penalty due to the suspicious climate between your factions."" marketFlavorTextColor","After a short wait, your connection request is accepted.
+
+""Hello, $playerName. Don't mind me, please, I'm just packing my things and will be gone within a day.""","IndEvo_ambassadorRemovalConfirm:Wish $himOrHer well and reaffirm your dismissal.
+IndEvo_convEndPolite:Reconsider and leave",
+IndEvo_ambassadorRemove3,DialogOptionSelected,"$option == IndEvo_ambassadorRemove
+IndEvo_checkForRepResponse NEUTRAL","ShowPersonVisual
+AddTextSmall ""This action will cause a reputation penalty. It is seen as uncalled for to dismiss an ambassador without good reason."" marketFlavorTextColor","""I am quite surprised you wish me gone. Have my efforts not satisfied your wishes? The Relations between our factions are in a good place and improving every month!""","IndEvo_ambassadorRemovalConfirm:Wish $himOrHer well and reaffirm your dismissal.
+IndEvo_convEndPolite:Reconsider and leave",
+IndEvo_ambassadorRemove4,DialogOptionSelected,"$option == IndEvo_ambassadorRemove
+IndEvo_checkForRepResponse FAVORABLE","ShowPersonVisual
+AddTextSmall ""This action will cause a major reputation penalty. Dismissing the Ambassador of a friendly faction is a diplomatic insult."" marketFlavorTextColor","""You wish me gone? Why? Our factions have good relations to each other, there is no reason for me to leave my post! This will not go over well with the public.""","IndEvo_ambassadorRemovalConfirm:Wish $himOrHer well and reaffirm your dismissal.
+IndEvo_convEndPolite:Reconsider and leave",
+IndEvo_ambassadorRemove5,DialogOptionSelected,"$option == IndEvo_ambassadorRemove
+IndEvo_checkForRepResponse WELCOMING","ShowPersonVisual
+AddTextSmall ""This action will cause an extreme reputation penalty. At this relation stage, the only reason to dismiss an Ambassador is intentional sabotage of the political position of a faction."" marketFlavorTextColor","""Is this some kind of joke? Why don't you come visit and we'll have a drink and talk about this. You must be aware that this would cause a massive public incident!""","IndEvo_ambassadorRemovalConfirm:Wish $himOrHer well and reaffirm your dismissal.
+IndEvo_convEndPolite:Reconsider and leave",
+IndEvo_ambassadorRemove6,DialogOptionSelected,"$option == IndEvo_ambassadorRemove
+IndEvo_checkForRepResponse FRIENDLY","ShowPersonVisual
+AddTextSmall ""This action will cause an extreme reputation penalty. At this relation stage, the only reason to dismiss an Ambassador is intentional sabotage of the political position of a faction."" marketFlavorTextColor","""Is this some kind of joke? Why don't you come visit and we'll have a drink and talk about this. You must be aware that this would cause a massive public incident!""","IndEvo_ambassadorRemovalConfirm:Wish $himOrHer well and reaffirm your dismissal.
+IndEvo_convEndPolite:Reconsider and leave",
+IndEvo_ambassadorRemovalConfirm,DialogOptionSelected,$option == IndEvo_ambassadorRemovalConfirm,"ShowDefaultVisual
+EndConversation
+IndEvo_ambassadorRemoval",You cut the comm link after some more discussion. The Ambassador will leave for $hisOrHer old post.,,
+IndEvo_ambMoveOption,DialogOptionSelected,$option == IndEvo_ambMoveOption,"ShowDefaultVisual
+EndConversation
+IndEvo_moveAmbassadorToClosestEmbassy","""Alright, I will head to my new post as soon as possible.""",,
+IndEvo_ambSabotageRep,DialogOptionSelected,$option == IndEvo_ambSabotageRep,"ShowPersonVisual
+AddTextSmall ""This option will make all your active ambassadors use their influence to increase their factions contribution towards a hostile activity event."" marketFlavorTextColor","""Not a problem. The sudden change in policy may cause confusion, but nothing that a glass of brandy can't fix.""","IndEvo_ambSabotageRep_confirm: Confirm
+IndEvo_showAmbassadorMenu: On second thought...
+",
+IndEvo_ambStopSabotageRep,DialogOptionSelected,"$option == IndEvo_ambStopSabotageRep
+$global.IndEvo_HAASabotage","ShowPersonVisual
+AddTextSmall ""This will make all your active ambassadors use their influence to decrease their factions contribution towards a hostile activity event."" marketFlavorTextColor","""Sure. I'll need some funds to alleviate the political whiplash our allies may experience, but I'll take that out of the usual budget.""
+$HeOrShe pauses for a second.
+
+""And I'll need some R&R after this.""","IndEvo_ambStopSabotageRep_confirm: Confirm
+IndEvo_showAmbassadorMenu: On second thought...",
+IndEvo_ambSabotageRep_confirm,DialogOptionSelected,$option == IndEvo_ambSabotageRep_confirm,"ShowPersonVisual
+FireAll IndEvo_AmbassadorMenu
+$global.IndEvo_HAASabotage = true","""Done! Anything else?""",,
+IndEvo_ambStopSabotageRep_confirm,DialogOptionSelected,$option == IndEvo_ambStopSabotageRep_confirm,"ShowPersonVisual
+FireAll IndEvo_AmbassadorMenu
+$global.IndEvo_HAASabotage = false","""Done! Anything else?""",,
+#END IndEvo PlayerMarketAmbassadorDialogue,,,,,,
+,,,"ShowPersonVisual
+FireAll IndEvo_AmbassadorMenu
+$global.IndEvo_HAASabotage = true",,,
+# IndEvo ambassador convEnd,,,,,,
+IndEvo_convEndPolite,DialogOptionSelected,$option == IndEvo_convEndPolite,"ShowDefaultVisual
+EndConversation",You cut the comm link after exchanging a few pleasantries.,,
+IndEvo_convEnd,DialogOptionSelected,$option == IndEvo_convEnd,"ShowDefaultVisual
+EndConversation",The comm link is abruptly cut.,,
+#END IndEvo ambassador convEnd,,,,,,
+#END Embassy,,,,,,
+,,,,,,
+# Senate,,,,,,
+IndEvo_FireBaseSenateOptionList,IndEvo_FireBaseSenateOptionList,$IndEvo_closeDialogueOnNextReturn,FireAll IndEvo_SenateOptions,,,
+IndEvo_NoEdictMenuPoint2_fb,IndEvo_SenateOptions,"!IndEvo_marketHasEdict
+IndEvo_systemHasSenate",,,1:IndEvo_chooseEdict:Enact an Edict for $marketName,
+IndEvo_HasEdictMenuPoint2_fb,IndEvo_SenateOptions,"IndEvo_marketHasEdict
+IndEvo_systemHasSenate",,,1:IndEvo_removeEdict:Remove the Edict for $marketName,
+IndEvo_SenateOptionsLeave,IndEvo_SenateOptions,,,,9:IndEvo_SelectreturnToMenu:Return,
+,,,,,,
+# IndEvo edicts Menu,,,,,,
+IndEvo_NoEdictMenuPoint,PopulateOptions,"$hasMarket
+$menuState == main
+IndEvo_marketIsPlayerOwned
+IndEvo_systemHasSenate
+!IndEvo_marketHasEdict
+!IndEvo_requiresColonyMenuPoint",,,99:IndEvo_chooseEdict:Enact an Edict for $marketName,
+IndEvo_HasEdictMenuPoint,PopulateOptions,"$hasMarket
+$menuState == main
+IndEvo_marketIsPlayerOwned
+IndEvo_systemHasSenate
+IndEvo_marketHasEdict
+!IndEvo_requiresColonyMenuPoint",,,99:IndEvo_removeEdict:Remove the Edict for $marketName,
+,,,,,,
+IndEvo_NoEdictMenuPoint2,IndEvo_ColonyOptionPoint,"!IndEvo_marketHasEdict
+IndEvo_systemHasSenate",,,1:IndEvo_chooseEdict:Enact an Edict for $marketName,
+IndEvo_HasEdictMenuPoint2,IndEvo_ColonyOptionPoint,"IndEvo_marketHasEdict
+IndEvo_systemHasSenate",,,1:IndEvo_removeEdict:Remove the Edict for $marketName,
+IndEvo_removeEdict,DialogOptionSelected,$option == IndEvo_removeEdict,"IndEvo_PrintActiveEdictInfo
+IndEvo_PrintPenaltyText",,"1:IndEvo_EdictRemovalConfirm:Confirm the removal
+2:IndEvo_SelectreturnToMenu:Return",
+IndEvo_EdictRemovalConfirm,DialogOptionSelected,$option == IndEvo_EdictRemovalConfirm,"IndEvo_removeEdict
+FireAll IndEvo_SenateOptionLeave",The Edict has been removed.,,
+IndEvo_chooseEdict,DialogOptionSelected,$option ==  IndEvo_chooseEdict,"IndEvo_CreateEdictSelectionList
+IndEvo_DesignateSubListPageToLoad_Edict set 1
+IndEvo_DisplaySubListPage_Edict $IndEvo_EdictSubListPage",Choose an Edict to enact for $marketName:,,
+IndEvo_ApplyEdict,DialogOptionSelected,$option ==  IndEvo_ApplyEdict,"IndEvo_applyEdict $IndEvo_selectedEdictID
+FireAll IndEvo_SenateOptionLeave",The Edict has been enacted!,,
+,,,,,,
+IndEvo_SenateOptionLeaveDefault,IndEvo_SenateOptionLeave,,"$menuState = main 0
+FireAll PopulateOptions",,,
+IndEvo_SenateOptionLeaveIndustry,IndEvo_SenateOptionLeave,$IndEvo_closeDialogueOnNextReturn,FireAll IndEvo_SenateOptions,,,
+,,,,,,
+IndEvo_EdictSelector_LoadCurrent,DialogOptionSelected,$option ==  IndEvo_EdictSelector_LoadCurrent,IndEvo_DisplaySubListPage_Edict $IndEvo_EdictSubListPage,,,
+IndEvo_EdictSelector_TriggerNext,DialogOptionSelected,$option ==  IndEvo_EdictSelector_TriggerNext,"IndEvo_DesignateSubListPageToLoad_Edict next
+IndEvo_DisplaySubListPage_Edict $IndEvo_EdictSubListPage",,,
+IndEvo_EdictSelector_TriggerPrevious,DialogOptionSelected,$option ==  IndEvo_EdictSelector_TriggerPrevious,"IndEvo_DesignateSubListPageToLoad_Edict prev
+IndEvo_DisplaySubListPage_Edict $IndEvo_EdictSubListPage",,,
+IndEvo_EdictWasSelected,DialogOptionSelected,IndEvo_OptionStartsWith_Edict IndEvo_SelectEdict_ $option,IndEvo_DisplayActionPanel_Edict,,,
+,,,,,,
+#END IndEvo edicts Menu,,,,,,
+#END Senate,,,,,,
+,,,,,,
+# Academy,,,,,,
+IndEvo_FireBaseAcademyOptionList,IndEvo_FireBaseAcademyOptionList,$IndEvo_closeDialogueOnNextReturn,"FireAll IndEvo_AcademyBaseMenu
+IndEvo_DisplayTrainingStatus","People in official looking uniforms hurry past you as you travel the well trodden corridors of the Academy towards the administrative offices. Casual congregations of students discussing current events contrast sharply with the military personnel present for training, but the atmosphere seems to be harmonious in light of the shared interests of both groups.",,
+,,,,,,
+# Academy Base menu,,,,,,
+IndEvo_AcademyBaseMenu,PopulateOptions,"$hasMarket
+$menuState == main
+IndEvo_marketHasIndustry IndEvo_Academy
+!IndEvo_requiresColonyMenuPoint
+RepIsAtWorst $faction.id INHOSPITABLE",,,99:IndEvo_IntitiateAcademyMenu:Visit the Academy,
+IndEvo_AcademyBaseMenu_GA,PopulateOptions,"$id == station_galatia_academy
+RepIsAtWorst $faction.id INHOSPITABLE",,,3:IndEvo_IntitiateAcademyMenu:Visit the Academy proper,
+IndEvo_AcademyBaseColonyOptionMenu,IndEvo_ColonyOptionPoint,IndEvo_marketHasIndustry IndEvo_Academy,,,2:IndEvo_IntitiateAcademyMenu:Visit the Academy,
+IndEvo_IntitiateAcademyMenu,DialogOptionSelected,$option == IndEvo_IntitiateAcademyMenu,"FireAll IndEvo_AcademyBaseMenu
+IndEvo_DisplayTrainingStatus","People in official looking uniforms hurry past you as you travel the well trodden corridors of the Academy towards the administrative offices. Casual congregations of students discussing current events contrast sharply with the military personnel present for training, but the atmosphere seems to be harmonious in light of the shared interests of both groups.",,
+IndEvo_AcademyReturnToColonyScreen,IndEvo_AcademyBaseMenu,$id != station_galatia_academy,"SetShortcut IndEvo_SelectreturnToMenu ""ESCAPE""",,9:IndEvo_SelectreturnToMenu:Return,
+IndEvo_AcademyReturnToColonyScreen_GA,IndEvo_AcademyBaseMenu,$id == station_galatia_academy,"SetShortcut gaMeetingEnd ""ESCAPE""",,9:gaMeetingEnd:Return,
+#END Academy Base menu,,,,,,
+,,,,,,
+# Officer Training,,,,,,
+IndEvo_SelectOfficerForTraining,IndEvo_AcademyBaseMenu,"!IndEvo_MarketIsTraining OFFICER
+IndEvo_CreatePersonSelectionList TRAIN OFFICER check",,,1:IndEvo_personSelector_officer_train:Officer Personality Training,
+IndEvo_SelectOfficerForTraining_Failure,IndEvo_AcademyBaseMenu,"!IndEvo_MarketIsTraining OFFICER
+!IndEvo_CreatePersonSelectionList TRAIN OFFICER check","SetEnabled IndEvo_personSelector_officer_train false
+SetTooltip IndEvo_personSelector_officer_train ""This Academy is unable to train any of your officers, or you don't have any.""",,1:IndEvo_personSelector_officer_train:Officer Personality Training,
+IndEvo_personSelector_officer_train,DialogOptionSelected,$option ==  IndEvo_personSelector_officer_train,"IndEvo_CreatePersonSelectionList TRAIN OFFICER
+IndEvo_DesignateSubListPageToLoad set 1
+IndEvo_DisplaySubListPage $IndEvo_subListPage",Select a person,,
+IndEvo_MovePersonOption_better,DialogOptionSelected,$option ==  IndEvo_MovePersonOption_better,"IndEvo_MovePerson better
+FireAll IndEvo_AcademyBaseMenu",,,
+IndEvo_MovePersonOption_worse,DialogOptionSelected,$option ==  IndEvo_MovePersonOption_worse,"IndEvo_MovePerson worse
+FireAll IndEvo_AcademyBaseMenu",,,
+IndEvo_AbortOfficerTraining,IndEvo_AcademyBaseMenu,IndEvo_MarketIsTraining OFFICER,,,1:IndEvo_LoadAbortDialogue_officer:Abort Officer Training,
+IndEvo_LoadAbortDialogue_officer,DialogOptionSelected,$option ==  IndEvo_LoadAbortDialogue_officer,IndEvo_PrepareForTrainingAbort OFFICER,Really abort training?,,
+#END Officer Training,,,,,,
+,,,,,,
+# Officer Storage,,,,,,
+IndEvo_SelectOfficerForStorage,IndEvo_AcademyBaseMenu,IndEvo_CreatePersonSelectionList STORE OFFICER check,,,3:IndEvo_personSelector_officer_store:Leave Officer,
+IndEvo_SelectOfficerForStorage_FAILURE,IndEvo_AcademyBaseMenu,!IndEvo_CreatePersonSelectionList STORE OFFICER check,"SetEnabled IndEvo_personSelector_officer_store false
+SetTooltip IndEvo_personSelector_officer_store ""You do not have any officers to store.""",,3:IndEvo_personSelector_officer_store:Leave Officer,
+IndEvo_personSelector_officer_store,DialogOptionSelected,$option ==  IndEvo_personSelector_officer_store,"IndEvo_CreatePersonSelectionList STORE OFFICER
+IndEvo_DesignateSubListPageToLoad set 1
+IndEvo_DisplaySubListPage $IndEvo_subListPage",Select a person,,
+IndEvo_SelectOfficerForStorageRemoval,IndEvo_AcademyBaseMenu,"IndEvo_CreatePersonSelectionList RETRIEVE OFFICER check
+IndEvo_PlayerHasOfficerCapacity",,,4:IndEvo_personSelector_officer_retrieve:Retrieve Officer,
+IndEvo_SelectOfficerForStorageRemoval_FAILURE_NOSTORE,IndEvo_AcademyBaseMenu,"!IndEvo_CreatePersonSelectionList RETRIEVE OFFICER check
+IndEvo_PlayerHasOfficerCapacity","SetEnabled IndEvo_personSelector_officer_retrieve false
+SetTooltip IndEvo_personSelector_officer_retrieve ""You do not have any officers stored here.""",,4:IndEvo_personSelector_officer_retrieve:Retrieve Officer,
+IndEvo_SelectOfficerForStorageRemoval_FAILURE_NOCAP,IndEvo_AcademyBaseMenu,"IndEvo_CreatePersonSelectionList RETRIEVE OFFICER check
+!IndEvo_PlayerHasOfficerCapacity","SetEnabled IndEvo_personSelector_officer_retrieve false
+SetTooltip IndEvo_personSelector_officer_retrieve ""You do not have any free officer slots.""",,4:IndEvo_personSelector_officer_retrieve:Retrieve Officer,
+IndEvo_personSelector_officer_retrieve,DialogOptionSelected,$option ==  IndEvo_personSelector_officer_retrieve,"IndEvo_CreatePersonSelectionList RETRIEVE OFFICER
+IndEvo_DesignateSubListPageToLoad set 1
+IndEvo_DisplaySubListPage $IndEvo_subListPage",Select a person,,
+#END Officer Storage,,,,,,
+,,,,,,
+# Admin Training,,,,,,
+IndEvo_SelectAdminForTraining,IndEvo_AcademyBaseMenu,"!IndEvo_MarketIsTraining ADMIN
+IndEvo_CreatePersonSelectionList TRAIN ADMIN check",,,2:IndEvo_personSelector_admin_train:Administrator Skill Training,
+IndEvo_SelectAdminForTraining_FAILURE,IndEvo_AcademyBaseMenu,"!IndEvo_MarketIsTraining ADMIN
+!IndEvo_CreatePersonSelectionList TRAIN ADMIN check","SetEnabled IndEvo_personSelector_admin_train false
+SetTooltip IndEvo_personSelector_admin_train ""This Academy is unable to train any of your administrators, or you don't have any.""",,2:IndEvo_personSelector_admin_train:Administrator Skill Training,
+IndEvo_personSelector_admin_train,DialogOptionSelected,$option ==  IndEvo_personSelector_admin_train,"IndEvo_CreatePersonSelectionList TRAIN ADMIN
+IndEvo_DesignateSubListPageToLoad set 1
+IndEvo_DisplaySubListPage $IndEvo_subListPage",Select a person,,
+IndEvo_AbortAdminTraining,IndEvo_AcademyBaseMenu,IndEvo_MarketIsTraining ADMIN,,,2:IndEvo_LoadAbortDialogue_admin:Abort Administrator Training,
+IndEvo_LoadAbortDialogue_admin,DialogOptionSelected,$option ==  IndEvo_LoadAbortDialogue_admin,IndEvo_PrepareForTrainingAbort ADMIN,Really abort training?,,
+#END Admin Training,,,,,,
+,,,,,,
+# Admin Storage,,,,,,
+IndEvo_SelectAdminForStorage,IndEvo_AcademyBaseMenu,IndEvo_CreatePersonSelectionList STORE ADMIN check,,,5:IndEvo_personSelector_admin_store:Leave Administrator,
+IndEvo_SelectAdminForStorage_FAILURE,IndEvo_AcademyBaseMenu,!IndEvo_CreatePersonSelectionList STORE ADMIN check,"SetEnabled IndEvo_personSelector_admin_store false
+SetTooltip IndEvo_personSelector_admin_store ""You do not have any non assigned administrators to store.""",,5:IndEvo_personSelector_admin_store:Leave Administrator,
+IndEvo_personSelector_admin_store,DialogOptionSelected,$option ==  IndEvo_personSelector_admin_store,"IndEvo_CreatePersonSelectionList STORE ADMIN
+IndEvo_DesignateSubListPageToLoad set 1
+IndEvo_DisplaySubListPage $IndEvo_subListPage",Select a person,,
+IndEvo_SelectAdminForStorageRemoval,IndEvo_AcademyBaseMenu,IndEvo_CreatePersonSelectionList RETRIEVE ADMIN check,,,6:IndEvo_personSelector_admin_retrieve:Retrieve Administrator,
+IndEvo_SelectAdminForStorageRemoval_FAILURE,IndEvo_AcademyBaseMenu,!IndEvo_CreatePersonSelectionList RETRIEVE ADMIN check,"SetEnabled IndEvo_personSelector_admin_retrieve false
+SetTooltip IndEvo_personSelector_admin_retrieve ""You do not have any administrators stored here.""",,6:IndEvo_personSelector_admin_retrieve:Retrieve Administrator,
+IndEvo_personSelector_admin_retrieve,DialogOptionSelected,$option ==  IndEvo_personSelector_admin_retrieve,"IndEvo_CreatePersonSelectionList RETRIEVE ADMIN
+IndEvo_DesignateSubListPageToLoad set 1
+IndEvo_DisplaySubListPage $IndEvo_subListPage",Select a person,,
+#END Admin Storage,,,,,,
+,,,,,,
+# Person Selector sublist handling,,,,,,
+IndEvo_MovePersonOption_fleet,DialogOptionSelected,$option ==  IndEvo_MovePersonOption_fleet,"IndEvo_MovePerson fleet
+FireAll IndEvo_AcademyBaseMenu","Training aborted, the person has been moved to the fleet.",,
+IndEvo_MovePersonOption_storage,DialogOptionSelected,$option ==  IndEvo_MovePersonOption_storage,"IndEvo_MovePerson storage
+FireAll IndEvo_AcademyBaseMenu","Training aborted, the person has been moved to storage.",,
+IndEvo_MovePersonOption,DialogOptionSelected,$option ==  IndEvo_MovePersonOption,"IndEvo_MovePerson
+FireAll IndEvo_AcademyBaseMenu",,,
+IndEvo_personSelector_LoadCurrent,DialogOptionSelected,$option ==  IndEvo_personSelector_LoadCurrent,IndEvo_DisplaySubListPage $IndEvo_subListPage,Select a person,,
+IndEvo_personSelector_TriggerNext,DialogOptionSelected,$option ==  IndEvo_personSelector_TriggerNext,"IndEvo_DesignateSubListPageToLoad next
+IndEvo_DisplaySubListPage $IndEvo_subListPage",Select a person,,
+IndEvo_personSelector_TriggerPrevious,DialogOptionSelected,$option ==  IndEvo_personSelector_TriggerPrevious,"IndEvo_DesignateSubListPageToLoad prev
+IndEvo_DisplaySubListPage $IndEvo_subListPage",Select a person,,
+IndEvo_personWasSelected,DialogOptionSelected,IndEvo_OptionStartsWith IndEvo_SelectPerson_ $option,IndEvo_DisplayPersonActionPanel,What would you like to do?,,
+#END Person Selector sublist handling,,,,,,
+#END Academy,,,,,,
+,,,,,,
+# Rift Generator,,,,,,
+IndEvo_RiftTarget_COLONY,IndEvo_RiftGenTargetOptions,IndEvo_MoreThanTwoColonies,,,1:IndEvo_RiftTarget_COLONY_panel:Move towards other colony,
+IndEvo_RiftTarget_COLONY_disabled,IndEvo_RiftGenTargetOptions,!IndEvo_MoreThanTwoColonies,"SetEnabled IndEvo_RiftTarget_COLONY_panel false
+SetTooltip IndEvo_RiftTarget_COLONY_panel ""You do not have another colonized star system.""",,1:IndEvo_RiftTarget_COLONY_panel:Move towards other colony,
+IndEvo_RiftTarget_CORE,IndEvo_RiftGenTargetOptions,,,,2:IndEvo_RiftTarget_CORE_panel:Move towards the core systems,
+IndEvo_RiftTarget_FRINGE,IndEvo_RiftGenTargetOptions,,,,3:IndEvo_RiftTarget_FRINGE_panel:Move towards the fringe,
+IndEvo_RiftTarget_RANDOM,IndEvo_RiftGenTargetOptions,,,,4:IndEvo_RiftTarget_RANDOM_panel:Move into a random direction,
+IndEvo_RiftTarget_return,IndEvo_RiftGenTargetOptions,,"SetShortcut IndEvo_SelectreturnToMenu ""ESCAPE""",,9:IndEvo_SelectreturnToMenu:Return,
+IndEvo_RiftTarget_COLONY_panel,DialogOptionSelected,$option == IndEvo_RiftTarget_COLONY_panel,,"Setting up a targeting device on another planet allows the Generator to plot a course towards it. 
+
+This will move the planet towards the your closest colony in another system.","1:IndEvo_RiftTarget_COLONY_init:Initiate the Rift
+2:IndEvo_IntitiateRiftGenMenu:Return",
+IndEvo_RiftTarget_CORE_panel,DialogOptionSelected,$option == IndEvo_RiftTarget_CORE_panel,,"Setting the target to the largest blips on the displays will plot a course towards the core worlds. 
+
+This will move the planet towards the core worlds.","1:IndEvo_RiftTarget_CORE_init:Initiate the Rift
+2:IndEvo_IntitiateRiftGenMenu:Return",
+IndEvo_RiftTarget_FRINGE_panel,DialogOptionSelected,$option == IndEvo_RiftTarget_FRINGE_panel,,"Targeting the space in the opposite direction of the activity blips will plot a course away from the core.
+
+This will move the planet towards the fringe of the sector.","1:IndEvo_RiftTarget_FRINGE_init:Initiate the Rift
+2:IndEvo_IntitiateRiftGenMenu:Return",
+IndEvo_RiftTarget_RANDOM_panel,DialogOptionSelected,$option == IndEvo_RiftTarget_RANDOM_panel,,"The engineer starts mashing seemingly random buttons. He does not seem to know what he is doing. Did he just drool on that panel? 
+
+Just pull the lever, you know you want it.","1:IndEvo_RiftTarget_RANDOM_init:Pull the lever
+2:IndEvo_IntitiateRiftGenMenu:Chicken out",
+,,,,,,
+IndEvo_RiftTarget_COLONY_init,DialogOptionSelected,$option == IndEvo_RiftTarget_COLONY_init,"IndEvo_RiftInit COLONY
+FireBest AddRiftgenLeaveOption","Ancient relays click into place. The crackling of raw energy drowns out any other sound as the machinery spools up, preparing for a jump.",,
+IndEvo_RiftTarget_CORE_init,DialogOptionSelected,$option == IndEvo_RiftTarget_CORE_init,"IndEvo_RiftInit CORE
+FireBest AddRiftgenLeaveOption","Ancient relays click into place. The crackling of raw energy drowns out any other sound as the machinery spools up, preparing for a jump.",,
+IndEvo_RiftTarget_FRINGE_init,DialogOptionSelected,$option == IndEvo_RiftTarget_FRINGE_init,"IndEvo_RiftInit FRINGE
+FireBest AddRiftgenLeaveOption","Ancient relays click into place. The crackling of raw energy drowns out any other sound as the machinery spools up, preparing for a jump.",,
+IndEvo_RiftTarget_RANDOM_init,DialogOptionSelected,$option == IndEvo_RiftTarget_RANDOM_init,"IndEvo_RiftInit RANDOM
+FireBest AddRiftgenLeaveOption","You time the pull for dramatic effect. Whatever the guy was doing with the control console, it is probably less important than having style.
+
+There is a muted explosion in another room.",,
+,,,,,,
+IndEvo_RiftTarget_EngageLeave,AddRiftgenLeaveOption,,"SetShortcut IndEvo_RiftTargetCloseDialogue ""ESCAPE""",,1:IndEvo_RiftTargetCloseDialogue:Leave,
+IndEvo_RiftTargetCloseDialogue,DialogOptionSelected,$option == IndEvo_RiftTargetCloseDialogue,DismissDialog,,,
+,,,,,,
+# Rift Base Menu,,,,,,
+IndEvo_FireBaseRGOptionList,IndEvo_FireBaseRGOptionList,$IndEvo_closeDialogueOnNextReturn,FireAll IndEvo_RiftGenTargetOptions,"The claustrophobic control center, while restored, still looks ancient. A seemingly permanent layer of dust covers the alien looking control panels, dimming the light emitted by hundreds of gauges and indicators. It is unclear if they are actually working.
+
+The lead engineer stops beating a display with a wrench as you enter.",,
+IndEvo_RiftControlMenuPoint,PopulateOptions,"$hasMarket
+$menuState == main
+IndEvo_marketIsPlayerOwned
+IndEvo_marketHasIndustry IndEvo_RiftGen
+!IndEvo_requiresColonyMenuPoint
+IndEvo_GeneratorReadyToFire
+IndEvo_GeneratorAllowedToFire",,,99:IndEvo_IntitiateRiftGenMenu:Rift Generator Control,
+IndEvo_RiftControlMenuPoint2,IndEvo_ColonyOptionPoint,"IndEvo_marketHasIndustry IndEvo_RiftGen
+IndEvo_GeneratorReadyToFire
+IndEvo_GeneratorAllowedToFire
+IndEvo_marketIsPlayerOwned",,,3:IndEvo_IntitiateRiftGenMenu:Rift Generator Control,
+IndEvo_RiftControlMenuPoint_disabled,PopulateOptions,"$hasMarket
+$menuState == main
+IndEvo_marketIsPlayerOwned
+IndEvo_marketHasIndustry IndEvo_RiftGen
+!IndEvo_requiresColonyMenuPoint
+!IndEvo_GeneratorReadyToFire
+IndEvo_GeneratorAllowedToFire","SetEnabled IndEvo_IntitiateRiftGenMenu false
+SetTooltip IndEvo_IntitiateRiftGenMenu ""The Rift Generator is not ready to fire yet.""",,99:IndEvo_IntitiateRiftGenMenu:Rift Generator Control,
+IndEvo_RiftControlMenuPoint2_disabled,IndEvo_ColonyOptionPoint,"IndEvo_marketHasIndustry IndEvo_RiftGen
+!IndEvo_GeneratorReadyToFire
+IndEvo_GeneratorAllowedToFire
+IndEvo_marketIsPlayerOwned","SetEnabled IndEvo_IntitiateRiftGenMenu false
+SetTooltip IndEvo_IntitiateRiftGenMenu ""The Rift Generator is not ready to fire yet.""",,3:IndEvo_IntitiateRiftGenMenu:Rift Generator Control,
+IndEvo_RiftControlMenuPoint_disabled2,PopulateOptions,"$hasMarket
+$menuState == main
+IndEvo_marketIsPlayerOwned
+IndEvo_marketHasIndustry IndEvo_RiftGen
+!IndEvo_requiresColonyMenuPoint
+!IndEvo_GeneratorAllowedToFire
+IndEvo_marketIsPlayerOwned","SetEnabled IndEvo_IntitiateRiftGenMenu false
+SetTooltip IndEvo_IntitiateRiftGenMenu ""There is an entity disrupting the targeting process, prohibiting the Generator from firing. It is probably something in orbit around the planet.""",,99:IndEvo_IntitiateRiftGenMenu:Rift Generator Control,
+IndEvo_RiftControlMenuPoint2_disabled2,IndEvo_ColonyOptionPoint,"IndEvo_marketHasIndustry IndEvo_RiftGen
+!IndEvo_GeneratorAllowedToFire
+IndEvo_marketIsPlayerOwned","SetEnabled IndEvo_IntitiateRiftGenMenu false
+SetTooltip IndEvo_IntitiateRiftGenMenu ""There is an entity disrupting the targeting process, prohibiting the Generator from firing. It is probably something in orbit around the planet.""",,3:IndEvo_IntitiateRiftGenMenu:Rift Generator Control,
+IndEvo_IntitiateRiftGenMenu,DialogOptionSelected,$option == IndEvo_IntitiateRiftGenMenu,FireAll IndEvo_RiftGenTargetOptions,"The claustrophobic control center, while restored, still looks ancient. A seemingly permanent layer of dust covers the alien looking control panels, dimming the light emitted by hundreds of gauges and indicators. It is unclear if they are actually working.
+
+The lead engineer stops beating a display with a wrench as you enter.",,
+#END Rift Base Menu,,,,,,
+#END Rift Generator,,,,,,
+,,,,,,
+# Shipping Port,,,,,,
+IndEvo_OpenShippingPortFromIndustryOption,IndEvo_FireBaseSPOptionList,$IndEvo_closeDialogueOnNextReturn,CourierPortDialoguePlugin,,,
+IndEvo_ShippingMenuPoint,PopulateOptions,"$hasMarket
+$menuState == main
+IndEvo_marketIsPlayerOwned
+IndEvo_marketHasIndustry IndEvo_PrivatePort
+!IndEvo_requiresColonyMenuPoint",,,99:IndEvo_IntitiateShippingMenu:Visit the Shipping Port,
+IndEvo_ShippingMenuPoint2,IndEvo_ColonyOptionPoint,"IndEvo_marketHasIndustry IndEvo_PrivatePort
+IndEvo_marketIsPlayerOwned",,,3:IndEvo_IntitiateShippingMenu:Visit the Shipping Port,
+IndEvo_IntitiateShippingMenu,DialogOptionSelected,$option == IndEvo_IntitiateShippingMenu,CourierPortDialoguePlugin,,,
+IndEvo_CommrelayShippingPoint,COB_AddOptions,"$tag:comm_relay
+!$objectiveNonFunctional
+CourierPortIsDisplayInRelay",,,9:IndEvo_COB_shipping:Contact a Courier Port,
+IndEvo_COB_shipping,DialogOptionSelected,$option == IndEvo_COB_shipping,CourierPortDialoguePlugin,,,
+#END Shipping Port,,,,,,
+,,,,,,
+# Ambassador Murdered,,,,,,
+IndEvo_bountyHunterHail,BeginFleetEncounter,"$IndEvo_bountyHunter score:1000
+!$ignorePlayerCommRequests","AddText ""You're being hailed by the $faction $otherShipOrFleet."" $faction.baseColor
+$hailing = true 0",,,
+IndEvo_bountyHunterText,OpenCommLink,"$entity.IndEvo_bountyHunter score:1000
+!$entity.ignorePlayerCommRequests",$entity.ignorePlayerCommRequests = true,"""Remember $entity.IndEvo_name? No? Let me refresh your memory, then - you murdered $entity.IndEvo_himOrHer in cold blood while in transit to your Embassy. $entity.IndEvo_theFaction can not let a breach of trust like this go unanswered.""
+
+The comm link goes dead in a crackle of static.",cutCommLinkNoText:Continue,
+,,,,,,
+oldstory_onSurveyIntercept,DialogOptionSelected,"$option == surveyPerform score:1000
+SurveyStoryReader PREP_STORY",,"The operation progresses swiftly. Your survey teams, accompanied by swarms of drones, do the routine checks on the local ruins. Judging by how the lone archivists' comms light up, he may have more insights on the fate that befell this planet.","1:oldstory_intro:Check in with the archivist
+0:surveyPerform:Ignore it and continue the survey",
+oldstory_intro,DialogOptionSelected,$option == oldstory_intro,"SurveyStoryReader READ_INTRO
+FireAll OldStoryReader",,0:oldstory_readnext:Continue,
+oldstory_readnext,DialogOptionSelected,$option == oldstory_readnext,"SurveyStoryReader READ_NEXT
+FireAll OldStoryReader",,,
+oldstory_outro,DialogOptionSelected,$option == oldstory_outro,SurveyStoryReader READ_OUTRO,,10:surveyPerform:Continue the survey,
+oldstory_addNextOption,OldStoryReader,"$option == oldstory_readnext
+SurveyStoryReader HAS_NEXT",,,0:oldstory_readnext:Continue,
+oldstory_addOutroOption,OldStoryReader,"$option == oldstory_readnext
+!SurveyStoryReader HAS_NEXT",,,0:oldstory_outro:Continue,
+,,,,,,
+# Ghost ship interaction rules - rest are in the script,,,,,,
+indevo_ghostShipContinueSelected,DialogOptionSelected,"$indevo_checkSalvageSpecialAgain score:1000
+$option == salSpecialContinue",FireBest CheckSalvageSpecial,,,
+indevo_ghostShipContinueSelectedDestroyed,DialogOptionSelected,"$indevo_destroyGhostShip score:1000
+$option == salSpecialContinue",SalvageEntity demolish,,,
+indevo_ghostShipFinishedNoContinueDestroyed,SalvageSpecialFinishedNoContinue,$indevo_destroyGhostShip score:1000,SalvageEntity demolish,,,
+,,,,,,

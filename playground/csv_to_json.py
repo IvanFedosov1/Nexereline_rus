@@ -5,23 +5,23 @@ from typing import List, Dict, Any, Tuple, Optional
 
 # --- ОБЩИЕ НАСТРОЙКИ ---
 # Режим работы: 'extract' (из CSV в JSON) или 'apply' (из JSON в CSV)
-MODE: str = 'extract'  # ИЗМЕНИТЕ ЗДЕСЬ: 'extract' или 'apply'
+# MODE: str = 'apply'  # ИЗМЕНИТЕ ЗДЕСЬ: 'extract' или 'apply'
 
 # --- НАСТРОЙКИ ДЛЯ ОБОИХ РЕЖИМОВ ---
 # Путь к ИСХОДНОМУ CSV файлу (читается в 'extract', читается как шаблон в 'apply')
-CSV_INPUT_FILE: str = 'rules_nex.csv'
+CSV_INPUT_FILE: str = 'rules.csv'
 # Путь к JSON файлу (создается в 'extract', читается в 'apply')
-JSON_TRANSLATION_FILE: str = 'rules_nex.json'
+JSON_TRANSLATION_FILE: str = 'rules.json'
 # Колонки для извлечения/применения перевода (номера через запятую, нумерация с 1)
 COLUMNS_TO_TRANSLATE_STR: str = '5,6' # Например, для колонок 'text' и 'options' в вашем исходном примере
 # Кодировка ИСХОДНОГО CSV файла
-CSV_INPUT_ENCODING: str = 'cp1251'
+CSV_INPUT_ENCODING: str = 'utf-8'
 # Кодировка JSON файла (рекомендуется utf-8)
 JSON_ENCODING: str = 'utf-8'
 
 # --- НАСТРОЙКИ ТОЛЬКО ДЛЯ РЕЖИМА 'apply' ---
 # Путь к НОВОМУ CSV файлу с примененными переводами
-CSV_OUTPUT_FILE: str = 'rules_nex_ru.csv'
+CSV_OUTPUT_FILE: str = 'rules_ru.csv'
 # Кодировка ВЫХОДНОГО CSV файла (рекомендуется utf-8 для совместимости)
 CSV_OUTPUT_ENCODING: str = 'utf-8'
 # Если в JSON для строки нет перевода (null или пустая строка),
@@ -458,24 +458,62 @@ def apply_translations_to_csv(
 
 # --- Основной блок запуска ---
 if __name__ == "__main__":
+    # Получаем АБСОЛЮТНЫЙ путь к директории, где лежит ЭТОТ СКРИПТ (.py файл)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    print(f"DEBUG: Каталог скрипта: {script_dir}")
+
+    # --- Создаем ПОЛНЫЕ ПУТИ к файлам, ОТНОСИТЕЛЬНО КАТАЛОГА СКРИПТА ---
+
+    
+    abs_csv_input_path = os.path.join(script_dir, CSV_INPUT_FILE)
+    abs_json_translation_path = os.path.join(script_dir, JSON_TRANSLATION_FILE)
+
+    
+    abs_csv_output_path = os.path.join(script_dir, CSV_OUTPUT_FILE)
+
+  
+
+    print(f"DEBUG: Полный путь к входному CSV: {abs_csv_input_path}")
+    print(f"DEBUG: Полный путь к JSON: {abs_json_translation_path}")
+    print(f"DEBUG: Полный путь к выходному CSV: {abs_csv_output_path}")
+
+    MODE = None # Инициализируем переменную для режима
+    while MODE not in ['extract', 'apply']:
+        print("\nВыберите режим работы скрипта:")
+        print("1: Извлечь тексты из CSV в JSON (режим 'extract')")
+        print("2: Применить переводы из JSON в новый CSV (режим 'apply')")
+
+        try:
+            choice = input("Введите номер режима (1 или 2): ").strip() # .strip() убирает случайные пробелы
+
+            if choice == '1':
+                MODE = 'extract'
+            elif choice == '2':
+                MODE = 'apply'
+            else:
+                print("Ошибка: Неверный ввод. Пожалуйста, введите 1 или 2.")
+        except (KeyboardInterrupt, EOFError): # Обработка прерывания ввода (Ctrl+C)
+             print("\nВыбор режима прерван. Выход.")
+             exit() # Завершаем скрипт
+
+    print(f"Выбран режим: '{MODE}'")
+
     try:
-        # Парсим и валидируем индексы колонок из строки
         column_indices_0based = parse_column_indices(COLUMNS_TO_TRANSLATE_STR)
 
-        # Выполняем выбранный режим
         if MODE == 'extract':
             extract_texts_to_json(
-                csv_filepath=CSV_INPUT_FILE,
-                json_filepath=JSON_TRANSLATION_FILE,
+                csv_filepath=abs_csv_input_path,          # <--- Используем полный путь
+                json_filepath=abs_json_translation_path, # <--- Используем полный путь
                 column_indices=column_indices_0based,
                 csv_encoding=CSV_INPUT_ENCODING,
                 json_encoding=JSON_ENCODING
             )
         elif MODE == 'apply':
             apply_translations_to_csv(
-                json_filepath=JSON_TRANSLATION_FILE,
-                csv_input_filepath=CSV_INPUT_FILE,
-                csv_output_filepath=CSV_OUTPUT_FILE,
+                json_filepath=abs_json_translation_path, # <--- Используем полный путь
+                csv_input_filepath=abs_csv_input_path,   # <--- Используем полный путь
+                csv_output_filepath=abs_csv_output_path, # <--- Используем полный путь
                 column_indices=column_indices_0based,
                 json_encoding=JSON_ENCODING,
                 csv_input_encoding=CSV_INPUT_ENCODING,
